@@ -1,84 +1,64 @@
 using System;
 using System.Collections.Generic;
+using ToDoApp.Model.Enums;
 
 namespace ToDoApp.Model
 {
-    public enum TypeOfRepeatTimeSpan
-    {
-        Day,
-        DayOfWeek,
-        Month,
-        Year
-    }
-    
-    // лень разбираться, зачем в конструкторе передавать запланированное время
-    // сделал необязательным параметром
-    // переписать, сделать удобную обёртку над datetime, возможно передавать дату в метод, а не конструктор
     public class RepeatingDate
     {
-        public TypeOfRepeatTimeSpan Type { get; private set; }
-        public int RepeatingEveryX { get; private set; }
-        public List<DayOfWeek> RepeatingDaysOfWeek { get; private set; } = new List<DayOfWeek>();
+        
+        public TypeOfRepeatTimeSpan Type { get; set; }
 
-        public DateTime LatestPlannedDateTime { get; private set; }
-
-        public RepeatingDate(TypeOfRepeatTimeSpan type, int repeatTimes, DateTime? plannedDateTime = null)
+        private int _repeatingEveryX;
+        public int RepeatingEveryX
         {
-            Type = type;
-            RepeatingEveryX = repeatTimes;
-            LatestPlannedDateTime = plannedDateTime ?? DateTime.Now;
-            UpdateNextRepeatingDate();
-        }
+            get => _repeatingEveryX;
+            set
+            {
+                if (value < 1)
+                {
+                    _repeatingEveryX = 1;
+                }
 
-        public RepeatingDate(TypeOfRepeatTimeSpan type, List<DayOfWeek> repeatingDaysOfWeek, int repeatTimes, DateTime? plannedDateTime = null)
-        {
-            if (repeatingDaysOfWeek == null || repeatingDaysOfWeek.Count == 0)
-            {
-                throw new ArgumentException("Неправильно задаётся дата повтора");
-            }
-            else
-            {
-                Type = type;
-                RepeatingDaysOfWeek = repeatingDaysOfWeek;
-                RepeatingEveryX = repeatTimes;
-                LatestPlannedDateTime = plannedDateTime ?? DateTime.Now;
-                UpdateNextRepeatingDate();
+                _repeatingEveryX = value;
             }
         }
 
-        public DateTime UpdateNextRepeatingDate()
+        public List<DayOfWeek> RepeatingDaysOfWeek { get; set; } = new List<DayOfWeek>();
+
+        /// <summary>
+        /// Вычисляет следующую дату (не учитывая время) повторяющейся задачи 
+        /// </summary>
+        /// <param name="latestPlannedDate"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
+        public DateTime GetNextDateTime(DateTime latestPlannedDate)
         {
             switch (Type)
             {
                 case TypeOfRepeatTimeSpan.Day:
-                    LatestPlannedDateTime = LatestPlannedDateTime.AddDays(RepeatingEveryX);
-                    return LatestPlannedDateTime;
-                    break;
+                    return latestPlannedDate.AddDays(RepeatingEveryX);
                 case TypeOfRepeatTimeSpan.DayOfWeek:
-                    for (int dayOfWeek = (int)LatestPlannedDateTime.DayOfWeek; dayOfWeek < (int)LatestPlannedDateTime.DayOfWeek + 7; dayOfWeek++)
+                    foreach (var dayOfWeek in RepeatingDaysOfWeek)
                     {
-                        int numbOfDay = dayOfWeek;
-                        if (numbOfDay == 7)
+                        if (dayOfWeek < latestPlannedDate.DayOfWeek)
                         {
-                            numbOfDay -= 7;
+                            return latestPlannedDate.AddDays(dayOfWeek + 7 - latestPlannedDate.DayOfWeek +
+                                                             (RepeatingEveryX - 1) * 7);
                         }
 
-                        if (RepeatingDaysOfWeek.Contains((DayOfWeek) numbOfDay))
+                        if (dayOfWeek >= latestPlannedDate.DayOfWeek)
                         {
-                            LatestPlannedDateTime = LatestPlannedDateTime.AddDays(dayOfWeek - (int) LatestPlannedDateTime.DayOfWeek +
-                                                          7 * RepeatingEveryX);
-                            return LatestPlannedDateTime;
+                            return latestPlannedDate.AddDays(dayOfWeek - latestPlannedDate.DayOfWeek +
+                                                             (RepeatingEveryX - 1) * 7);
                         }
                     }
+
                     throw new ArgumentOutOfRangeException(null, "Ошибка в вычислении даты повтора");
                 case TypeOfRepeatTimeSpan.Month:
-                    LatestPlannedDateTime = LatestPlannedDateTime.AddMonths(RepeatingEveryX);
-                    return LatestPlannedDateTime;
-                    break;
+                    return latestPlannedDate.AddMonths(RepeatingEveryX);
                 case TypeOfRepeatTimeSpan.Year:
-                    LatestPlannedDateTime = LatestPlannedDateTime.AddYears(RepeatingEveryX);
-                    return LatestPlannedDateTime;
-                    break;
+                    return latestPlannedDate.AddYears(RepeatingEveryX);
                 default:
                     throw new ArgumentOutOfRangeException(null, "Ошибка в вычислении даты повтора");
             }

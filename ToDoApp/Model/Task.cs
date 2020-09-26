@@ -2,19 +2,21 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices.ComTypes;
+using ToDoApp.Model.Enums;
 
 namespace ToDoApp.Model
 {
     public class Task
     {
         protected const int DefaultPriority = 5;
-        
-        public int Id { get; private set; }        
-        
+
+        public int Id { get; set; }
+
         public string Name { get; set; }
         public string Description { get; set; }
 
         private bool _isDone;
+
         public bool IsDone
         {
             get => _isDone;
@@ -22,14 +24,12 @@ namespace ToDoApp.Model
             {
                 if (value)
                 {
-                    if (RepeatingDate != null)
+                    if (RepeatingDate != null && Date.HasValue)
                     {
-                        _repeatingDate.UpdateNextRepeatingDate();
-                        TimeSpan? timeDifference = DateTimeOfEnd - DateTimeOfBeginning;
-                        DateTimeOfBeginning = RepeatingDate;
-                        DateTimeOfEnd = DateTimeOfBeginning + timeDifference;
+                        Date = RepeatingDate.GetNextDateTime(Date.Value);
                     }
                 }
+
                 _isDone = value;
             }
         }
@@ -38,60 +38,81 @@ namespace ToDoApp.Model
         {
             get
             {
-                if (DateTimeOfBeginning == null)
+                // если дата не указана, задача никогда не будет просрочена
+                if (Date == null)
                 {
                     return false;
                 }
 
-                if (DateTimeOfEnd == null)
+                if (DateTime.Today > Date)
                 {
-                    return DateTime.Now > DateTimeOfBeginning;
+                    return true;
                 }
 
-                return DateTime.Now > DateTimeOfEnd;
+                if (DateTime.Today == Date)
+                {
+                    if (TimeOfBeginning.HasValue && TimeOfEnd.HasValue)
+                    {
+                        return DateTime.Now.TimeOfDay > TimeOfEnd;
+                    }
+
+                    // Если указана только дата начала, то задача не считается просроченой до конца дня
+                    if (TimeOfBeginning.HasValue && !TimeOfEnd.HasValue)
+                    {
+                        return DateTime.Today > Date;
+                    }
+                }
+
+                return false;
             }
         }
 
-        public DateTime? DateTimeOfBeginning { get; set; }
-
-        public DateTime? DateTimeOfEnd { get; set; }
-
-        public DateTime? RepeatingDate => _repeatingDate?.LatestPlannedDateTime;
-
-        public (TypeOfRepeatTimeSpan type, IEnumerable<DayOfWeek> daysOfWeek, int repeats, DateTime? latestPlannedDate)? RepeatingConditions {
+        public bool IsActual
+        {
             get
             {
-                if (_repeatingDate != null)
+                if (Date == null)
                 {
-                    return (
-                        _repeatingDate.Type,
-                        _repeatingDate.RepeatingDaysOfWeek,
-                        _repeatingDate.RepeatingEveryX,
-                        _repeatingDate.LatestPlannedDateTime);
+                    return true;
                 }
 
-                return null;
-            }
-            set
-            {
-                if (value == null)
+                if (Date == DateTime.Today)
                 {
-                    _repeatingDate = null;
-                }
-                else
-                {
-                    if (value.Value.daysOfWeek.Any())
+                    if (TimeOfBeginning.HasValue && TimeOfEnd.HasValue)
                     {
-                        _repeatingDate = new RepeatingDate(value.Value.type, new List<DayOfWeek>(value.Value.daysOfWeek), value.Value.repeats,
-                            value.Value.latestPlannedDate);
+                        return (TimeOfBeginning <= DateTime.Now.TimeOfDay) || (DateTime.Now.TimeOfDay < TimeOfEnd);
                     }
-                    else
+
+                    // Если указана только дата начала, то задача считается актуальной до конца дня
+                    if (TimeOfBeginning.HasValue && !TimeOfEnd.HasValue)
                     {
-                        _repeatingDate = new RepeatingDate(value.Value.type, value.Value.repeats,
-                            value.Value.latestPlannedDate);
+                        return DateTime.Now.TimeOfDay >= TimeOfBeginning;
                     }
                 }
+
+                return false;
             }
+        }
+
+        private DateTime? _date;
+        public DateTime? Date
+        {
+            get => _date?.Date;
+            set => _date = value;
+        }
+
+        private TimeSpan? _timeOfBeginning;
+        public TimeSpan? TimeOfBeginning
+        {
+            get => _timeOfBeginning;
+            set => _timeOfBeginning = value;
+        }
+
+        private TimeSpan? _timeOfEnd;
+        public TimeSpan? TimeOfEnd
+        {
+            get => _timeOfEnd;
+            set => _timeOfEnd = value;
         }
 
         private int _priority;
@@ -115,18 +136,10 @@ namespace ToDoApp.Model
             }
         }
 
-        private RepeatingDate _repeatingDate;
+        public RepeatingDate RepeatingDate { get; set; }
 
-        //временный конструктор
-        public Task(string name)
+        public Task()
         {
-            Name = name;
-        }
-
-        public Task(int id, string name)
-        {
-            Id = id;
-            Name = name;
             Priority = DefaultPriority;
         }
     }
