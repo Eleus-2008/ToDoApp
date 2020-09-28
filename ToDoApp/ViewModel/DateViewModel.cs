@@ -13,48 +13,35 @@ namespace ToDoApp.ViewModel
     {
         private TaskViewModel _task;
 
-        private DateTime? _tempDateOfBeginning;
+        private DateTime? _date;
 
-        public DateTime? TempDateOfBeginning
+        public DateTime? Date
         {
-            get => _tempDateOfBeginning;
+            get => _date;
             set
             {
-                _tempDateOfBeginning = value;
+                _date = value;
                 OnPropertyChanged();
                 IsValid = CheckAllProps();
             }
         }
 
-        private DateTime? _tempDateOfEnd;
+        private TimeSpan? _timeOfBeginning;
 
-        public DateTime? TempDateOfEnd
+        public string TimeOfBeginning
         {
-            get => _tempDateOfEnd;
-            set
-            {
-                _tempDateOfEnd = value;
-                OnPropertyChanged();
-                IsValid = CheckAllProps();
-            }
-        }
-
-        private TimeSpan? _tempTimeOfBeginning;
-
-        public string TempTimeOfBeginning
-        {
-            get => _tempTimeOfBeginning?.ToString();
+            get => _timeOfBeginning?.ToString();
             set
             {
                 if (value.Trim(' ') == "")
                 {
-                    _tempTimeOfBeginning = null;
+                    _timeOfBeginning = null;
                     OnPropertyChanged();
                     IsValid = CheckAllProps();
                 }
                 else if (TimeSpan.TryParse(value, out var parsedDate))
                 {
-                    _tempTimeOfBeginning = parsedDate;
+                    _timeOfBeginning = parsedDate;
                     OnPropertyChanged();
                     RemoveError("TempTimeOfBeginning", ERROR_TIME_IS_INCORRECT);
                     IsValid = CheckAllProps();
@@ -68,22 +55,22 @@ namespace ToDoApp.ViewModel
             }
         }
 
-        private TimeSpan? _tempTimeOfEnd;
+        private TimeSpan? _timeOfEnd;
 
-        public string TempTimeOfEnd
+        public string TimeOfEnd
         {
-            get => _tempTimeOfEnd?.ToString();
+            get => _timeOfEnd?.ToString();
             set
             {
                 if (value.Trim(' ') == "")
                 {
-                    _tempTimeOfEnd = null;
+                    _timeOfEnd = null;
                     OnPropertyChanged();
                     IsValid = CheckAllProps();
                 }
                 else if (TimeSpan.TryParse(value, out var parsedDate))
                 {
-                    _tempTimeOfEnd = parsedDate;
+                    _timeOfEnd = parsedDate;
                     OnPropertyChanged();
                     IsValid = CheckAllProps();
                     RemoveError("TempTimeOfEnd", ERROR_TIME_IS_INCORRECT);
@@ -127,6 +114,7 @@ namespace ToDoApp.ViewModel
                         allErrors += error + Environment.NewLine;
                     }
                 }
+
                 return allErrors;
             }
         }
@@ -145,25 +133,21 @@ namespace ToDoApp.ViewModel
                 return _saveDateCommand ??
                        (_saveDateCommand = new RelayCommand(obj =>
                        {
-                           _task.DateTimeOfBeginning = new DateTime(_tempDateOfBeginning.Value.Year,
-                               _tempDateOfBeginning.Value.Month, _tempDateOfBeginning.Value.Day,
-                               _tempTimeOfBeginning.Value.Hours, _tempTimeOfBeginning.Value.Minutes,
-                               _tempTimeOfBeginning.Value.Seconds);
-
-                           _task.DateTimeOfEnd = new DateTime(_tempDateOfEnd.Value.Year, _tempDateOfEnd.Value.Month,
-                               _tempDateOfEnd.Value.Day,
-                               _tempTimeOfEnd.Value.Hours, _tempTimeOfEnd.Value.Minutes, _tempTimeOfEnd.Value.Seconds);
+                           _task.Date = _date;
+                           _task.TimeOfBeginning = _timeOfBeginning;
+                           _task.TimeOfEnd = _timeOfEnd;
                        }, obj => IsValid));
             }
         }
 
 
         private const string ERROR_DATE_IS_EXPIRED = "Указанная дата уже наступила";
-        private const string ERROR_ENDDATE_IS_EARLIER = "Дата окончания задачи наступит раньше даты начала";
         private const string ERROR_TIME_IS_INCORRECT = "Указано некорректное время";
         private const string ERROR_DATE_IS_NOT_SPECIFIED = "Не указана дата";
         private const string ERROR_TIME_IS_NOT_SPECIFIED = "Не указано время";
-        private const string ERROR_ENDING_TIME_IS_EARLIER = "Время окончания задачи наступит раньше времени начала";
+
+        private const string ERROR_ENDING_TIME_IS_EARLIER =
+            "Время окончания задачи наступит раньше времени начала";
 
         private Dictionary<String, List<String>> _errors =
             new Dictionary<string, List<string>>();
@@ -191,101 +175,47 @@ namespace ToDoApp.ViewModel
 
         private bool CheckAllProps()
         {
-            if (!_tempDateOfBeginning.HasValue && _tempTimeOfBeginning.HasValue)
+            if (!_date.HasValue && (_timeOfBeginning.HasValue || _timeOfEnd.HasValue))
             {
-                AddError("TempDateOfBeginning", ERROR_DATE_IS_NOT_SPECIFIED);
+                AddError("Date", ERROR_DATE_IS_NOT_SPECIFIED);
             }
             else
             {
-                RemoveError("TempDateOfBeginning", ERROR_DATE_IS_NOT_SPECIFIED);
+                RemoveError("Date", ERROR_DATE_IS_NOT_SPECIFIED);
             }
 
-            if (!_tempDateOfEnd.HasValue && _tempTimeOfEnd.HasValue)
+            if (!_timeOfBeginning.HasValue && _timeOfEnd.HasValue)
             {
-                AddError("TempDateOfEnd", ERROR_DATE_IS_NOT_SPECIFIED);
+                AddError("TimeOfBeginning", ERROR_TIME_IS_NOT_SPECIFIED);
             }
             else
             {
-                RemoveError("TempDateOfEnd", ERROR_DATE_IS_NOT_SPECIFIED);
+                RemoveError("TimeOfBeginning", ERROR_TIME_IS_NOT_SPECIFIED);
             }
 
-
-            if (!_tempTimeOfBeginning.HasValue && _tempTimeOfEnd.HasValue)
+            if (_date.HasValue)
             {
-                AddError("TempTimeOfBeginning", ERROR_TIME_IS_NOT_SPECIFIED);
-            }
-            else
-            {
-                RemoveError("TempTimeOfBeginning", ERROR_TIME_IS_NOT_SPECIFIED);
-            }
-
-            if (!_tempTimeOfEnd.HasValue && _tempTimeOfBeginning.HasValue)
-            {
-                AddError("TempTimeOfEnd", ERROR_TIME_IS_NOT_SPECIFIED);
-            }
-            else
-            {
-                RemoveError("TempTimeOfEnd", ERROR_TIME_IS_NOT_SPECIFIED);
-            }
-
-
-            if (!_tempDateOfBeginning.HasValue && _tempDateOfEnd.HasValue)
-            {
-                AddError("TempDateOfBeginning", ERROR_DATE_IS_NOT_SPECIFIED);
-            }
-            else
-            {
-                RemoveError("TempDateOfBeginning", ERROR_DATE_IS_NOT_SPECIFIED);
-            }
-
-
-            if (_tempDateOfBeginning.HasValue)
-            {
-                if (_tempDateOfBeginning.Value.Date < DateTime.Now.Date)
+                if (_date < DateTime.Now.Date)
                 {
-                    AddError("TempDateOfBeginning", ERROR_DATE_IS_EXPIRED);
+                    AddError("Date", ERROR_DATE_IS_EXPIRED);
                 }
                 else
                 {
-                    RemoveError("TempDateOfBeginning", ERROR_DATE_IS_EXPIRED);
+                    RemoveError("Date", ERROR_DATE_IS_EXPIRED);
                 }
             }
 
-            if (_tempDateOfBeginning.HasValue && _tempTimeOfBeginning.HasValue)
+            if (_date.HasValue && _timeOfBeginning.HasValue)
             {
-                if (_tempDateOfBeginning.Value.Date == DateTime.Now.Date)
+                if (_date == DateTime.Now.Date)
                 {
-                    if (_tempTimeOfBeginning.Value < new TimeSpan(DateTime.Now.Hour, DateTime.Now.Minute, DateTime.Now.Second))
+                    if (_timeOfBeginning < DateTime.Now.TimeOfDay)
                     {
-                        AddError("TempTimeOfBeginning", ERROR_DATE_IS_EXPIRED);
-                    }
-                }
-            }
-
-            if (_tempDateOfBeginning.HasValue && _tempDateOfEnd.HasValue)
-            {
-                if (_tempDateOfEnd.Value.Date < _tempDateOfBeginning.Value.Date)
-                {
-                    AddError("TempDateOfEnd", ERROR_ENDDATE_IS_EARLIER);
-                }
-                else
-                {
-                    RemoveError("TempDateOfEnd", ERROR_ENDDATE_IS_EARLIER);
-                }
-            }
-
-            if (_tempDateOfBeginning.HasValue && _tempDateOfEnd.HasValue &&
-                _tempTimeOfBeginning.HasValue && _tempTimeOfEnd.HasValue)
-            {
-                if (_tempDateOfBeginning.Value.Date == _tempDateOfEnd.Value.Date)
-                {
-                    if (_tempTimeOfEnd.Value <= _tempTimeOfBeginning.Value)
-                    {
-                        AddError("TempTimeOfEnd", ERROR_ENDING_TIME_IS_EARLIER);
+                        AddError("TimeOfBeginning", ERROR_DATE_IS_EXPIRED);
                     }
                     else
                     {
-                        RemoveError("TempTimeOfEnd", ERROR_ENDING_TIME_IS_EARLIER);
+                        RemoveError("TimeOfBeginning", ERROR_DATE_IS_EXPIRED);
                     }
                 }
             }

@@ -6,6 +6,9 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using ToDoApp.Model;
+using ToDoApp.Model.Enums;
+
+// ReSharper disable ExplicitCallerInfoArgument
 
 namespace ToDoApp.ViewModel
 {
@@ -13,15 +16,14 @@ namespace ToDoApp.ViewModel
     {
         private TaskViewModel _task;
 
+        private int? _repeatInterval;
 
-        private int? _countOfRepeats;
-        //название не отражает суть - через сколько повторятся, а не сколько раз
-        public int? CountOfRepeats
+        public int? RepeatInterval
         {
-            get => _countOfRepeats;
+            get => _repeatInterval;
             set
             {
-                _countOfRepeats = value;
+                _repeatInterval = value;
                 OnPropertyChanged();
             }
         }
@@ -30,10 +32,7 @@ namespace ToDoApp.ViewModel
 
         public int SelectedTypeOfRepeatTimeSpan
         {
-            get
-            {
-                return _typeOfRepeatTimeSpan == null ? -1 : (int)_typeOfRepeatTimeSpan;
-            }
+            get { return _typeOfRepeatTimeSpan == null ? -1 : (int) _typeOfRepeatTimeSpan; }
             set
             {
                 _typeOfRepeatTimeSpan = value == -1 ? (TypeOfRepeatTimeSpan?) null : (TypeOfRepeatTimeSpan) value;
@@ -48,6 +47,8 @@ namespace ToDoApp.ViewModel
         }
 
         private List<DayOfWeek> _repeatingDaysOfWeek = new List<DayOfWeek>();
+
+        #region DaysOfWeekProps
 
         public bool IsMondayChoosen
         {
@@ -64,6 +65,7 @@ namespace ToDoApp.ViewModel
                 }
             }
         }
+
         public bool IsTuesdayChoosen
         {
             get => _repeatingDaysOfWeek.Contains(DayOfWeek.Tuesday);
@@ -79,6 +81,7 @@ namespace ToDoApp.ViewModel
                 }
             }
         }
+
         public bool IsWednesdayChoosen
         {
             get => _repeatingDaysOfWeek.Contains(DayOfWeek.Wednesday);
@@ -94,6 +97,7 @@ namespace ToDoApp.ViewModel
                 }
             }
         }
+
         public bool IsThursdayChoosen
         {
             get => _repeatingDaysOfWeek.Contains(DayOfWeek.Thursday);
@@ -109,6 +113,7 @@ namespace ToDoApp.ViewModel
                 }
             }
         }
+
         public bool IsFridayChoosen
         {
             get => _repeatingDaysOfWeek.Contains(DayOfWeek.Friday);
@@ -124,6 +129,7 @@ namespace ToDoApp.ViewModel
                 }
             }
         }
+
         public bool IsSaturdayChoosen
         {
             get => _repeatingDaysOfWeek.Contains(DayOfWeek.Saturday);
@@ -139,6 +145,7 @@ namespace ToDoApp.ViewModel
                 }
             }
         }
+
         public bool IsSundayChoosen
         {
             get => _repeatingDaysOfWeek.Contains(DayOfWeek.Sunday);
@@ -155,20 +162,18 @@ namespace ToDoApp.ViewModel
             }
         }
 
+        #endregion
 
         public RepeatDateViewModel(TaskViewModel task)
         {
             _task = task;
 
-            if (_task.RepeatingConditions.HasValue)
+            if (_task.RepeatingConditions != null)
             {
-                var repeatingConditions = _task.RepeatingConditions;
-                CountOfRepeats = repeatingConditions.Value.repeats;
-                SelectedTypeOfRepeatTimeSpan = (int) repeatingConditions.Value.type;
-                if (_task.RepeatingConditions.Value.daysOfWeek.Any())
-                {
-                    _repeatingDaysOfWeek = new List<DayOfWeek>(repeatingConditions.Value.daysOfWeek);
-                }
+                _typeOfRepeatTimeSpan = _task.RepeatingConditions.Type;
+                _repeatInterval = _task.RepeatingConditions.RepeatInterval;
+                _repeatingDaysOfWeek = _task.RepeatingConditions.RepeatingDaysOfWeek;
+
                 UpdateDaysOfWeekProperties();
             }
         }
@@ -183,15 +188,17 @@ namespace ToDoApp.ViewModel
                 return _saveDateCommand ??
                        (_saveDateCommand = new RelayCommand(obj =>
                        {
-                           if (_typeOfRepeatTimeSpan.HasValue && _countOfRepeats.HasValue)
-                           {
-                               _task.RepeatingConditions = (_typeOfRepeatTimeSpan.Value, _repeatingDaysOfWeek,
-                                   _countOfRepeats.Value, null);
-                           }
-                           else
-                           {
-                               _task.RepeatingConditions = null;
-                           }
+                           // ReSharper disable once PossibleInvalidOperationException
+                           _task.RepeatingConditions.Type = _typeOfRepeatTimeSpan.Value;
+                           // ReSharper disable once PossibleInvalidOperationException
+                           _task.RepeatingConditions.RepeatInterval = _repeatInterval.Value;
+                           _task.RepeatingConditions.RepeatingDaysOfWeek = _repeatingDaysOfWeek;
+                       }, obj =>
+                       {
+                           if (!_typeOfRepeatTimeSpan.HasValue || !_repeatInterval.HasValue) return false;
+                           if (_typeOfRepeatTimeSpan == TypeOfRepeatTimeSpan.DayOfWeek &&
+                               !_repeatingDaysOfWeek.Any()) return false;
+                           return true;
                        }));
             }
         }

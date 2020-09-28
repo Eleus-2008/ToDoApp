@@ -12,13 +12,14 @@ namespace ToDoApp.ViewModel
     public class ToDoAppViewModel : INotifyPropertyChanged
     {
         private IRepository _repository;
+        private ApplicationContext _context = new ApplicationContext();
 
         public ObservableCollection<ToDoListViewModel> DefaultToDoLists { get; set; } = new ObservableCollection<ToDoListViewModel>();
         public ObservableCollection<ToDoListViewModel> ToDoLists { get; set; } = new ObservableCollection<ToDoListViewModel>();
 
         public BindingList<TaskViewModel> TasksList { get; set; } = new BindingList<TaskViewModel>();
 
-        public TaskViewModel CurrentTask = new TaskViewModel(new Task(""));
+        public TaskViewModel CurrentTask = new TaskViewModel(new Task());
 
         public ToDoListViewModel CurrentList = new ToDoListViewModel(new ToDoList("default"));
 

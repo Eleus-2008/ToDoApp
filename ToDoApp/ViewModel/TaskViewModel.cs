@@ -3,102 +3,97 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using ToDoApp.Model;
+using ToDoApp.Model.Enums;
 
 namespace ToDoApp.ViewModel
 {
     public class TaskViewModel : INotifyPropertyChanged
     {
-        private Task _task;
-
-        public TaskViewModel(Task task)
-        {
-            _task = task;
-        }
-
-        public Task Task => _task; 
-
-        public int Id => _task.Id;
+        public Task Task { get; }
 
         public string Name
         {
-            get => _task.Name;
+            get => Task.Name;
             set
             {
-                _task.Name = value;
+                Task.Name = value;
                 OnPropertyChanged();
             }
         }
 
         public string Description
         {
-            get => _task.Description;
+            get => Task.Description;
             set
             {
-                _task.Description = value;
+                Task.Description = value;
                 OnPropertyChanged();
             }
         }
 
         public bool IsDone
         {
-            get => _task.IsDone;
+            get => Task.IsDone;
             set
             {
-                _task.IsDone = value;
+                Task.IsDone = value;
                 OnPropertyChanged();
             }
         }
 
-        public bool IsExpired
-        {
-            get => _task.IsExpired;
-        }
+        public bool IsExpired => Task.IsExpired;
 
-        public DateTime? DateTimeOfBeginning
+        public bool IsActual => Task.IsActual;
+
+        public DateTime? Date
         {
-            get => _task.DateTimeOfBeginning;
+            get => Task.Date;
             set
             {
-                _task.DateTimeOfBeginning = value;
+                Task.Date = value;
+                OnPropertyChanged();
+            }
+        }
+        public TimeSpan? TimeOfBeginning
+        {
+            get => Task.TimeOfBeginning;
+            set
+            {
+                Task.TimeOfBeginning = value;
                 OnPropertyChanged();
             }
         }
 
-        public DateTime? DateTimeOfEnd
+        public TimeSpan? TimeOfEnd
         {
-            get => _task.DateTimeOfEnd;
+            get => Task.TimeOfEnd;
             set
             {
-                _task.DateTimeOfEnd = value;
+                Task.TimeOfEnd = value;
                 OnPropertyChanged();
             }
         }
 
-        public DateTime? RepeatingDate
+        public RepeatingConditions RepeatingConditions
         {
-            get => _task.RepeatingDate;
-        }
-
-        public (TypeOfRepeatTimeSpan type, IEnumerable<DayOfWeek> daysOfWeek, int repeats, DateTime? latestPlannedDate)? RepeatingConditions
-        {
-            get => _task.RepeatingConditions;
-            set
-            {
-                _task.RepeatingConditions = value;
-                OnPropertyChanged();
-            }
+            get => Task.RepeatingConditions;
+            set => Task.RepeatingConditions = value;
         }
 
         public int Priority
         {
-            get => _task.Priority;
+            get => Task.Priority;
             set
             {
-                _task.Priority = value;
+                Task.Priority = value;
                 OnPropertyChanged();
             }
         }
 
+        public TaskViewModel(Task task)
+        {
+            Task = task;
+        }
 
         public event PropertyChangedEventHandler PropertyChanged;
 

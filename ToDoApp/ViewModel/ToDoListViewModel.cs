@@ -8,28 +8,24 @@ namespace ToDoApp.ViewModel
 {
     public class ToDoListViewModel : INotifyPropertyChanged
     {
-        private ToDoList _toDoList;
-
-        public ToDoList ToDoList => _toDoList;
+        public ToDoList ToDoList { get; }
 
         public string Name
         {
-            get => _toDoList.Name;
+            get => ToDoList.Name;
             set
             {
-                _toDoList.Name = value;
+                ToDoList.Name = value;
                 OnPropertyChanged();
             }
         }
 
-        public int Id => _toDoList.Id;
-
-        public IEnumerable<TaskViewModel> Tasks => _toDoList.GetTasks.Select(task => new TaskViewModel(task));
+        public IEnumerable<TaskViewModel> Tasks => ToDoList.Tasks.Select(task => new TaskViewModel(task));
 
 
         public ToDoListViewModel(ToDoList toDoList)
         {
-            _toDoList = toDoList;
+            ToDoList = toDoList;
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
