@@ -12,8 +12,10 @@ namespace ToDoApp.Model
 
         public int Id { get; set; }
 
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
         public string Description { get; set; }
+        
+        public ToDoList ToDoList { get; set; }
 
         private bool _isDone;
 
@@ -24,9 +26,9 @@ namespace ToDoApp.Model
             {
                 if (value)
                 {
-                    if (RepeatingDate != null && Date.HasValue)
+                    if (RepeatingConditions != null && Date.HasValue)
                     {
-                        Date = RepeatingDate.GetNextDateTime(Date.Value);
+                        Date = RepeatingConditions.GetNextDateTime(Date.Value);
                     }
                 }
 
@@ -136,7 +138,7 @@ namespace ToDoApp.Model
             }
         }
 
-        public RepeatingDate RepeatingDate { get; set; }
+        public RepeatingConditions RepeatingConditions { get; set; }
 
         public Task()
         {
