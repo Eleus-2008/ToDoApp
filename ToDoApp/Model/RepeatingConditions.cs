@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 using ToDoApp.Model.Enums;
+using ToDoApp.Model.Interfaces;
 
 namespace ToDoApp.Model
 {
     [Owned]
-    public class RepeatingConditions
+    public class RepeatingConditions : IEntity
     {
         public int Id { get; set; }
         

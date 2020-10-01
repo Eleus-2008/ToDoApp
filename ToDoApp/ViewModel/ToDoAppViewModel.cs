@@ -21,7 +21,7 @@ namespace ToDoApp.ViewModel
 
         public TaskViewModel CurrentTask = new TaskViewModel(new Task());
 
-        public ToDoListViewModel CurrentList = new ToDoListViewModel(new ToDoList("default"));
+        public ToDoListViewModel CurrentList = new ToDoListViewModel(new ToDoList());
 
         public bool IsTaskEditing { get; private set; }
 

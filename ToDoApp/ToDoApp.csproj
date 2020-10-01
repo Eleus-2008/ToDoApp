@@ -172,9 +172,15 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Model\ApplicationContext.cs" />
+    <Compile Include="Model\CommandSaver.cs" />
+    <Compile Include="Model\Enums\HttpRequestType.cs" />
+    <Compile Include="Model\SavingCommandDbSet.cs" />
     <Compile Include="Model\Enums\TypeOfRepeatTimeSpan.cs" />
-    <Compile Include="Model\IRepository.cs" />
+    <Compile Include="Model\Interfaces\IEntity.cs" />
+    <Compile Include="Model\Interfaces\IRepository.cs" />
     <Compile Include="Model\RelayCommand.cs" />
+    <Compile Include="Model\ServerContext.cs" />
+    <Compile Include="Model\UnitOfWork.cs" />
     <Compile Include="ViewModel\DateViewModel.cs" />
     <Compile Include="ViewModel\RepeatDateViewModel.cs" />
     <Compile Include="View\AppDictionary.xaml.cs">
