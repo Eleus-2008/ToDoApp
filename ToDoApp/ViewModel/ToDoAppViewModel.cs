@@ -11,9 +11,7 @@ namespace ToDoApp.ViewModel
 {
     public class ToDoAppViewModel : INotifyPropertyChanged
     {
-        private IRepository _repository;
-        private ApplicationContext _context = new ApplicationContext();
-
+        private UnitOfWork _unitOfWork = new UnitOfWork();
         public ObservableCollection<ToDoListViewModel> DefaultToDoLists { get; set; } = new ObservableCollection<ToDoListViewModel>();
         public ObservableCollection<ToDoListViewModel> ToDoLists { get; set; } = new ObservableCollection<ToDoListViewModel>();
 
@@ -51,9 +49,11 @@ namespace ToDoApp.ViewModel
                 return _addListCommand ??
                     (_addListCommand = new RelayCommand(obj =>
                     {
-                        var listName = obj as string;
-                        var newList = new ToDoList(listName);
-                        //repository.CreateToDoList(newList);
+                        var newList = new ToDoList
+                        {
+                            Name = obj as string
+                        };
+                        //_unitOfWork.Create(newList);
                         ToDoLists.Add(new ToDoListViewModel(newList));
                     }));
             }
@@ -98,7 +98,7 @@ namespace ToDoApp.ViewModel
                 return _addTaskCommand ??
                     (_addTaskCommand = new RelayCommand(obj =>
                     {
-                        _repository.CreateTask(CurrentTask.Task);
+                        //_repository.CreateTask(CurrentTask.Task);
                         TasksList.Add(CurrentTask);
                     },
                     obj => CurrentTask.Name.Trim() != ""));
