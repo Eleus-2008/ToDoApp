@@ -8,12 +8,20 @@ namespace ToDoApp.Model
 {
     public class UnitOfWork
     {
-        private ApplicationContext _localContext = new ApplicationContext();
-        private ServerContext _serverContext = new ServerContext();
+        private readonly ApplicationContext _localContext = new ApplicationContext();
+        private readonly ServerContext _serverContext;
 
-        private CommandSaver _commandSaver = new CommandSaver();
+        private readonly CommandSaver _commandSaver = new CommandSaver();
 
         public IRepository<Task> Tasks { get; private set; }
         public IRepository<ToDoList> ToDoLists { get; private set; }
+
+        public UnitOfWork()
+        {
+            _serverContext = new ServerContext(_commandSaver);
+            
+            Tasks = new SavingCommandDbSet<Task>(_commandSaver, _localContext.Tasks, _localContext);
+            ToDoLists = new SavingCommandDbSet<ToDoList>(_commandSaver, _localContext.ToDoLists, _localContext);
+        }
     }
 }
