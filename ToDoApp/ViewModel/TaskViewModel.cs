@@ -52,6 +52,7 @@ namespace ToDoApp.ViewModel
             {
                 Task.Date = value;
                 OnPropertyChanged();
+                OnPropertyChanged("TextDateTime");
             }
         }
         public TimeSpan? TimeOfBeginning
@@ -61,6 +62,7 @@ namespace ToDoApp.ViewModel
             {
                 Task.TimeOfBeginning = value;
                 OnPropertyChanged();
+                OnPropertyChanged("TextDateTime");
             }
         }
 
@@ -71,6 +73,38 @@ namespace ToDoApp.ViewModel
             {
                 Task.TimeOfEnd = value;
                 OnPropertyChanged();
+                OnPropertyChanged("TextDateTime");
+            }
+        }
+
+        public string TextDateTime
+        {
+            get
+            {
+                var text = string.Empty;
+                if (Date.HasValue)
+                {
+                    if (DateTime.Today.Year == Date.Value.Year)
+                    {
+                        text = Date.Value.ToString("ddd, d MMM");
+                    }
+                    else
+                    {
+                        text += Date.Value.ToString(" yyyy");
+                    }
+
+                    if (TimeOfBeginning.HasValue)
+                    {
+                        text += TimeOfBeginning.Value.ToString("hh:mm");
+                        if (TimeOfEnd.HasValue)
+                        {
+                            text += " - ";
+                            text += TimeOfEnd.Value.ToString("hh:mm");
+                        }
+                    }
+                }
+
+                return text;
             }
         }
 
@@ -86,6 +120,44 @@ namespace ToDoApp.ViewModel
             set
             {
                 Task.Priority = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public string TextPriority
+        {
+            get
+            {
+                if (Priority <= 3)
+                {
+                    return "Низкий";
+                }
+
+                if (4 <= Priority && Priority >= 7)
+                {
+                    return "Средний";
+                }
+
+                if (8 <= Priority)
+                {
+                    return "Высокий";
+                }
+
+                return "Средний";
+            }
+            set
+            {
+                switch (value.ToLower())
+                {
+                    case "низкий": Priority = 2;
+                        break;
+                    case "средний": Priority = 5;
+                        break;
+                    case "высокий": Priority = 8;
+                        break;
+                    default: Priority = 5;
+                        break;
+                }
                 OnPropertyChanged();
             }
         }
