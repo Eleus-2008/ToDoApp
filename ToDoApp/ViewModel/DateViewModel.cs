@@ -7,8 +7,6 @@ using ToDoApp.Model;
 
 namespace ToDoApp.ViewModel
 {
-    // Порядок проверки условий ошибок не совсем логичен
-    // При обнулении свойств из-за двойной проверки возможно некорректное поведение
     public class DateViewModel : INotifyPropertyChanged
     {
         private TaskViewModel _task;
@@ -43,12 +41,12 @@ namespace ToDoApp.ViewModel
                 {
                     _timeOfBeginning = parsedDate;
                     OnPropertyChanged();
-                    RemoveError("TempTimeOfBeginning", ERROR_TIME_IS_INCORRECT);
+                    RemoveError("TimeOfBeginning", ERROR_TIME_IS_INCORRECT);
                     IsValid = CheckAllProps();
                 }
                 else
                 {
-                    AddError("TempTimeOfBeginning", ERROR_TIME_IS_INCORRECT);
+                    AddError("TimeOfBeginning", ERROR_TIME_IS_INCORRECT);
                     OnPropertyChanged("Errors");
                     IsValid = false;
                 }
@@ -73,11 +71,11 @@ namespace ToDoApp.ViewModel
                     _timeOfEnd = parsedDate;
                     OnPropertyChanged();
                     IsValid = CheckAllProps();
-                    RemoveError("TempTimeOfEnd", ERROR_TIME_IS_INCORRECT);
+                    RemoveError("TimeOfEnd", ERROR_TIME_IS_INCORRECT);
                 }
                 else
                 {
-                    AddError("TempTimeOfEnd", ERROR_TIME_IS_INCORRECT);
+                    AddError("TimeOfEnd", ERROR_TIME_IS_INCORRECT);
                     IsValid = false;
                 }
             }

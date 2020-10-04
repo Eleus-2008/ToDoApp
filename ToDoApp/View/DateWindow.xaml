@@ -7,43 +7,37 @@
         mc:Ignorable="d"
         Title="DateWindow" Height="240" Width="320">
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition/>
-            <RowDefinition/>
-            <RowDefinition/>
-            <RowDefinition/>
-        </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition/>
-            <ColumnDefinition/>
-        </Grid.ColumnDefinitions>
+        <StackPanel>
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="15">
+                <TextBlock Text="Дата:" />
+                <DatePicker SelectedDate="{Binding Date}"
+                            DateValidationError="DatePicker_DateValidationError" />
+            </StackPanel>
 
-        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-            <TextBlock Text="Дата начала:"/>
-            <DatePicker SelectedDate="{Binding TempDateOfBeginning}" DateValidationError="DatePicker_DateValidationError"/>
+            <StackPanel Orientation="Horizontal"  HorizontalAlignment="Center" VerticalAlignment="Center" Margin="15">
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,15,0">
+                    <TextBlock Text="Время начала:" />
+                    <TextBox Text="{Binding TimeOfBeginning}" />
+                </StackPanel>
+
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Margin="15,0,0,0">
+                    <TextBlock Text="Время окончания:" />
+                    <TextBox Text="{Binding TimeOfEnd}" />
+                </StackPanel>
+            </StackPanel>
+
+            <StackPanel Margin="10">
+                <TextBlock Text="{Binding Errors}" />
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal"  HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10">
+                <Button x:Name="SaveButton" Content="Сохранить" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10"
+                        Command="{Binding SaveDateCommand}" Click="SaveButton_Click" />
+
+                <Button x:Name="ExitButton" Content="Отмена" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10"
+                        Click="ExitButton_Click" />
+            </StackPanel>
         </StackPanel>
-        
-        <StackPanel Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center">
-            <TextBlock Text="Дата окончания:"/>
-            <DatePicker SelectedDate="{Binding TempDateOfEnd}" DateValidationError="DatePicker_DateValidationError"/>
-        </StackPanel>
-
-        <StackPanel Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center">
-            <TextBlock Text="Время начала:"/>
-            <TextBox Text="{Binding TempTimeOfBeginning}"/>
-        </StackPanel>
-
-        <StackPanel Grid.Row="1" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center">
-            <TextBlock Text="Время окончания:"/>
-            <TextBox Text="{Binding TempTimeOfEnd}"/>
-        </StackPanel>
-
-        <TextBlock Text="{Binding Errors}" Grid.Row="2" Grid.ColumnSpan="2"/>
-
-        <Button x:Name="SaveButton" Grid.Row="3" Content="Сохранить" HorizontalAlignment="Center" VerticalAlignment="Center"
-                Command="{Binding SaveDateCommand}" Click="SaveButton_Click"/>
-
-        <Button x:Name="ExitButton" Grid.Row="3" Grid.Column="1" Content="Отмена" HorizontalAlignment="Center" VerticalAlignment="Center" Click="ExitButton_Click"/>
 
     </Grid>
 </Window>
