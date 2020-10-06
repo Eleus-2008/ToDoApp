@@ -1,18 +1,17 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using ToDoApp.Model.Enums;
 using ToDoApp.Model.Interfaces;
 
 namespace ToDoApp.Model
 {
-    [Owned]
     public class RepeatingConditions : IEntity
     {
         public int Id { get; set; }
         
-        [Column(TypeName = "TEXT")]
         public TypeOfRepeatTimeSpan Type { get; set; }
 
         private int _repeatInterval = 1;
@@ -29,9 +28,23 @@ namespace ToDoApp.Model
                 _repeatInterval = value;
             }
         }
-
-        [Column(TypeName = "TEXT")]
+        
         public List<DayOfWeek> RepeatingDaysOfWeek { get; set; } = new List<DayOfWeek>();
+
+        public string SerializedDaysOfWeek
+        {
+            get
+            {
+                return string.Join(",", RepeatingDaysOfWeek.ConvertAll(input => nameof(input)));
+            }
+            set
+            {
+                RepeatingDaysOfWeek = Array.ConvertAll<string,DayOfWeek>(value.Split(','), input =>
+                {
+                    return (DayOfWeek)Enum.Parse(typeof(DayOfWeek), input);
+                }).ToList();
+            }
+        }
 
         /// <summary>
         /// Вычисляет следующую дату (не учитывая время) повторяющейся задачи 

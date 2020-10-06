@@ -1,4 +1,8 @@
+using System;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using ToDoApp.Model.Enums;
 
 namespace ToDoApp.Model
 {
@@ -18,7 +22,17 @@ namespace ToDoApp.Model
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Task>().ToTable("Tasks");
+            modelBuilder.Entity<Task>()
+                .OwnsOne(e => e.RepeatingConditions, repeatingConditions =>
+                {
+                    repeatingConditions
+                    .Ignore(e => e.RepeatingDaysOfWeek)
+                        .Property(e => e.Type)
+                        .HasConversion(new EnumToStringConverter<TypeOfRepeatTimeSpan>())
+                        .HasColumnType("TEXT");
+                })
+                .ToTable("Tasks");
+            
             modelBuilder.Entity<ToDoList>().ToTable("ToDoLists");
         }
     }
