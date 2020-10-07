@@ -28,7 +28,7 @@ namespace ToDoApp.ViewModel
 
         public string TimeOfBeginning
         {
-            get => _timeOfBeginning?.ToString();
+            get => _timeOfBeginning?.ToString("hh':'mm");
             set
             {
                 if (value.Trim(' ') == "")
@@ -37,18 +37,12 @@ namespace ToDoApp.ViewModel
                     OnPropertyChanged();
                     IsValid = CheckAllProps();
                 }
-                else if (TimeSpan.TryParse(value, out var parsedDate))
+                else if (TimeSpan.TryParse(value, out var parsedDate) &&
+                         (TimeSpan.Zero <= parsedDate && parsedDate < TimeSpan.FromHours(24)))
                 {
-                    _timeOfBeginning = parsedDate;
+                    _timeOfBeginning = new TimeSpan(parsedDate.Hours, parsedDate.Minutes, 0);
                     OnPropertyChanged();
-                    RemoveError("TimeOfBeginning", ERROR_TIME_IS_INCORRECT);
                     IsValid = CheckAllProps();
-                }
-                else
-                {
-                    AddError("TimeOfBeginning", ERROR_TIME_IS_INCORRECT);
-                    OnPropertyChanged("Errors");
-                    IsValid = false;
                 }
             }
         }
@@ -57,7 +51,7 @@ namespace ToDoApp.ViewModel
 
         public string TimeOfEnd
         {
-            get => _timeOfEnd?.ToString();
+            get => _timeOfEnd?.ToString("hh':'mm");
             set
             {
                 if (value.Trim(' ') == "")
@@ -66,17 +60,12 @@ namespace ToDoApp.ViewModel
                     OnPropertyChanged();
                     IsValid = CheckAllProps();
                 }
-                else if (TimeSpan.TryParse(value, out var parsedDate))
+                else if (TimeSpan.TryParse(value, out var parsedDate) &&
+                         (TimeSpan.Zero <= parsedDate && parsedDate < TimeSpan.FromHours(24)))
                 {
-                    _timeOfEnd = parsedDate;
+                    _timeOfEnd = new TimeSpan(parsedDate.Hours, parsedDate.Minutes, 0);
                     OnPropertyChanged();
                     IsValid = CheckAllProps();
-                    RemoveError("TimeOfEnd", ERROR_TIME_IS_INCORRECT);
-                }
-                else
-                {
-                    AddError("TimeOfEnd", ERROR_TIME_IS_INCORRECT);
-                    IsValid = false;
                 }
             }
         }
@@ -120,6 +109,11 @@ namespace ToDoApp.ViewModel
         public DateViewModel(TaskViewModel task)
         {
             _task = task;
+            Date = _task?.Date;
+            _timeOfBeginning = _task?.TimeOfBeginning;
+            OnPropertyChanged("TimeOfBeginning");
+            _timeOfEnd = _task?.TimeOfEnd;
+            OnPropertyChanged("TimeOfEnd");
         }
 
         private RelayCommand _saveDateCommand;
@@ -191,31 +185,35 @@ namespace ToDoApp.ViewModel
                 RemoveError("TimeOfBeginning", ERROR_TIME_IS_NOT_SPECIFIED);
             }
 
-            if (_date.HasValue)
+            if ((_timeOfBeginning.HasValue && _timeOfEnd.HasValue) &&
+                (_timeOfEnd <= _timeOfBeginning))
             {
-                if (_date < DateTime.Now.Date)
-                {
-                    AddError("Date", ERROR_DATE_IS_EXPIRED);
-                }
-                else
-                {
-                    RemoveError("Date", ERROR_DATE_IS_EXPIRED);
-                }
+                AddError("TimeOfEnd", ERROR_ENDING_TIME_IS_EARLIER);
+            }
+            else
+            {
+                RemoveError("TimeOfEnd", ERROR_ENDING_TIME_IS_EARLIER);
             }
 
-            if (_date.HasValue && _timeOfBeginning.HasValue)
+            if ((_date.HasValue) &&
+                (_date < DateTime.Now.Date))
             {
-                if (_date == DateTime.Now.Date)
-                {
-                    if (_timeOfBeginning < DateTime.Now.TimeOfDay)
-                    {
-                        AddError("TimeOfBeginning", ERROR_DATE_IS_EXPIRED);
-                    }
-                    else
-                    {
-                        RemoveError("TimeOfBeginning", ERROR_DATE_IS_EXPIRED);
-                    }
-                }
+                AddError("Date", ERROR_DATE_IS_EXPIRED);
+            }
+            else
+            {
+                RemoveError("Date", ERROR_DATE_IS_EXPIRED);
+            }
+
+            if ((_date.HasValue && _timeOfBeginning.HasValue) &&
+                (_timeOfBeginning < DateTime.Now.TimeOfDay) &&
+                (_date == DateTime.Now.Date))
+            {
+                AddError("TimeOfBeginning", ERROR_DATE_IS_EXPIRED);
+            }
+            else
+            {
+                RemoveError("TimeOfBeginning", ERROR_DATE_IS_EXPIRED);
             }
 
             OnPropertyChanged("Errors");
