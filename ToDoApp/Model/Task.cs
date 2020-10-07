@@ -30,6 +30,8 @@ namespace ToDoApp.Model
                     if (RepeatingConditions != null && Date.HasValue)
                     {
                         Date = RepeatingConditions.GetNextDateTime(Date.Value);
+                        OnDateUpdated();
+                        return;
                     }
                 }
 
@@ -104,19 +106,9 @@ namespace ToDoApp.Model
             set => _date = value;
         }
 
-        private TimeSpan? _timeOfBeginning;
-        public TimeSpan? TimeOfBeginning
-        {
-            get => _timeOfBeginning;
-            set => _timeOfBeginning = value;
-        }
+        public TimeSpan? TimeOfBeginning { get; set; }
 
-        private TimeSpan? _timeOfEnd;
-        public TimeSpan? TimeOfEnd
-        {
-            get => _timeOfEnd;
-            set => _timeOfEnd = value;
-        }
+        public TimeSpan? TimeOfEnd { get; set; }
 
         private int _priority;
         public int Priority
@@ -144,6 +136,12 @@ namespace ToDoApp.Model
         public Task()
         {
             Priority = DefaultPriority;
+        }
+
+        public event EventHandler DateUpdated;
+        private void OnDateUpdated()
+        {
+            DateUpdated?.Invoke(this, EventArgs.Empty);
         }
     }
 }

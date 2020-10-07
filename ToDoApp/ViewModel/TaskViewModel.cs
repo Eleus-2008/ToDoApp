@@ -84,22 +84,20 @@ namespace ToDoApp.ViewModel
                 var text = string.Empty;
                 if (Date.HasValue)
                 {
-                    if (DateTime.Today.Year == Date.Value.Year)
-                    {
-                        text = Date.Value.ToString("ddd, d MMM");
-                    }
-                    else
+                    text = Date.Value.ToString("ddd, d MMM");
+                    
+                    if (DateTime.Today.Year != Date.Value.Year)
                     {
                         text += Date.Value.ToString(" yyyy");
                     }
 
                     if (TimeOfBeginning.HasValue)
                     {
-                        text += TimeOfBeginning.Value.ToString("hh:mm");
+                        text += TimeOfBeginning.Value.ToString("hh':'mm");
                         if (TimeOfEnd.HasValue)
                         {
                             text += " - ";
-                            text += TimeOfEnd.Value.ToString("hh:mm");
+                            text += TimeOfEnd.Value.ToString("hh':'mm");
                         }
                     }
                 }
@@ -112,6 +110,66 @@ namespace ToDoApp.ViewModel
         {
             get => Task.RepeatingConditions;
             set => Task.RepeatingConditions = value;
+        }
+
+        public string TextRepeating
+        {
+            get
+            {
+                if (RepeatingConditions == null)
+                {
+                    return string.Empty;
+                }
+                var text = "Повт. каждые ";
+                text += RepeatingConditions.RepeatInterval + " ";
+                switch (RepeatingConditions.Type)
+                {
+                    case TypeOfRepeatTimeSpan.Day:
+                        text += "дн. ";
+                        break;
+                    case TypeOfRepeatTimeSpan.DayOfWeek:
+                        foreach (var dayOfWeek in RepeatingConditions.RepeatingDaysOfWeek)
+                        {
+                            switch (dayOfWeek)
+                            {
+                                case DayOfWeek.Sunday:
+                                    text += "Вс ";
+                                    break;
+                                case DayOfWeek.Monday:
+                                    text += "Пн ";
+                                    break;
+                                case DayOfWeek.Tuesday:
+                                    text += "Вт ";
+                                    break;
+                                case DayOfWeek.Wednesday:
+                                    text += "Ср ";
+                                    break;
+                                case DayOfWeek.Thursday:
+                                    text += "Чт ";
+                                    break;
+                                case DayOfWeek.Friday:
+                                    text += "Пт ";
+                                    break;
+                                case DayOfWeek.Saturday:
+                                    text += "Сб ";
+                                    break;
+                                default:
+                                    throw new ArgumentOutOfRangeException();
+                            }
+                        }
+                        break;
+                    case TypeOfRepeatTimeSpan.Month:
+                        text += "мес. ";
+                        break;
+                    case TypeOfRepeatTimeSpan.Year:
+                        text += "г. ";
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+
+                return text;
+            }
         }
 
         public int Priority
@@ -165,6 +223,10 @@ namespace ToDoApp.ViewModel
         public TaskViewModel(Task task)
         {
             Task = task;
+            task.DateUpdated += (sender, args) =>
+            {
+                OnPropertyChanged("TextDateTime");
+            };
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
