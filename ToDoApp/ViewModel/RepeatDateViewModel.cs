@@ -16,26 +16,26 @@ namespace ToDoApp.ViewModel
     {
         private TaskViewModel _task;
 
-        private int? _repeatInterval;
+        private int _repeatInterval = 1;
 
-        public int? RepeatInterval
+        public int RepeatInterval
         {
             get => _repeatInterval;
             set
             {
-                _repeatInterval = value;
+                _repeatInterval = value < 1 ? 1 : value;
                 OnPropertyChanged();
             }
         }
 
-        private TypeOfRepeatTimeSpan? _typeOfRepeatTimeSpan;
+        private TypeOfRepeatTimeSpan _typeOfRepeatTimeSpan = TypeOfRepeatTimeSpan.Day;
 
         public int SelectedTypeOfRepeatTimeSpan
         {
-            get { return _typeOfRepeatTimeSpan == null ? -1 : (int) _typeOfRepeatTimeSpan; }
+            get => (int) _typeOfRepeatTimeSpan;
             set
             {
-                _typeOfRepeatTimeSpan = value == -1 ? (TypeOfRepeatTimeSpan?) null : (TypeOfRepeatTimeSpan) value;
+                _typeOfRepeatTimeSpan = (TypeOfRepeatTimeSpan) value;
                 OnPropertyChanged();
                 OnPropertyChanged("IsDaysOfWeekVisible");
             }
@@ -188,14 +188,14 @@ namespace ToDoApp.ViewModel
                 return _saveDateCommand ??
                        (_saveDateCommand = new RelayCommand(obj =>
                        {
-                           // ReSharper disable once PossibleInvalidOperationException
-                           _task.RepeatingConditions.Type = _typeOfRepeatTimeSpan.Value;
-                           // ReSharper disable once PossibleInvalidOperationException
-                           _task.RepeatingConditions.RepeatInterval = _repeatInterval.Value;
-                           _task.RepeatingConditions.RepeatingDaysOfWeek = _repeatingDaysOfWeek;
+                           _task.RepeatingConditions = new RepeatingConditions
+                           {
+                               RepeatInterval = _repeatInterval,
+                               Type = _typeOfRepeatTimeSpan,
+                               RepeatingDaysOfWeek = _repeatingDaysOfWeek
+                           };
                        }, obj =>
                        {
-                           if (!_typeOfRepeatTimeSpan.HasValue || !_repeatInterval.HasValue) return false;
                            if (_typeOfRepeatTimeSpan == TypeOfRepeatTimeSpan.DayOfWeek &&
                                !_repeatingDaysOfWeek.Any()) return false;
                            return true;

@@ -109,7 +109,11 @@ namespace ToDoApp.ViewModel
         public RepeatingConditions RepeatingConditions
         {
             get => Task.RepeatingConditions;
-            set => Task.RepeatingConditions = value;
+            set
+            {
+                Task.RepeatingConditions = value;
+                OnPropertyChanged("TextRepeating");
+            }
         }
 
         public string TextRepeating
