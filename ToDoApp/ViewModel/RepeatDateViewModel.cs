@@ -188,6 +188,30 @@ namespace ToDoApp.ViewModel
                 return _saveDateCommand ??
                        (_saveDateCommand = new RelayCommand(obj =>
                        {
+                           _repeatingDaysOfWeek.Sort((x, y) =>
+                           {
+                               if (x == DayOfWeek.Sunday)
+                               {
+                                   return 1;
+                               }
+                               
+                               if (y == DayOfWeek.Sunday)
+                               {
+                                   return -1;
+                               }
+                               
+                               if (x > y)
+                               {
+                                   return 1;
+                               }
+
+                               if (y > x)
+                               {
+                                   return -1;
+                               }
+
+                               return 0;
+                           });
                            _task.RepeatingConditions = new RepeatingConditions
                            {
                                RepeatInterval = _repeatInterval,
