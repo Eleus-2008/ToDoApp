@@ -26,10 +26,5 @@ namespace ToDoApp.View
             var nameTextBox = sender as TextBox;
             nameTextBox.IsReadOnly = true;
         }
-
-        private void EditTaskButton_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
     }
 }

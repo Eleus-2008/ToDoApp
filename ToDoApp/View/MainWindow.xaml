@@ -19,24 +19,27 @@
         </Grid.ColumnDefinitions>
 
         <StackPanel>
-            <ListBox ItemsSource="{Binding DefaultToDoLists}" Margin="0,20,0,0" Style="{StaticResource ListBoxStyle}"
-                     ItemTemplate="{StaticResource SidebarItemTemplate}" />
+            <ListBox ItemsSource="{Binding DefaultToDoLists}" Margin="0,20,0,0" Style="{StaticResource ListBoxStyle}" />
             <Separator Margin="0,10" />
             <StackPanel Orientation="Horizontal">
                 <TextBox x:Name="AddListTextBox" Text="Добавить список..." />
                 <Button Content="+" Command="{Binding AddListCommand}"
                         CommandParameter="{Binding Text, ElementName=AddListTextBox}" />
             </StackPanel>
-            <ListBox x:Name="ToDoListsBox" ItemsSource="{Binding ToDoLists}" Style="{StaticResource ListBoxStyle}"
-                     ItemTemplate="{StaticResource SidebarItemTemplate}" />
+            <ListBox x:Name="ToDoListsBox" ItemsSource="{Binding ToDoLists}" Style="{StaticResource ListBoxStyle}" />
         </StackPanel>
 
         <StackPanel Grid.Column="1" Margin="20">
             <StackPanel>
-                <TextBox IsReadOnly="False" Text="{Binding Name}" VerticalContentAlignment="Center" BorderThickness="0" />
+                <TextBox IsReadOnly="False" Text="{Binding CurrentTask.Name}" VerticalContentAlignment="Center"
+                         BorderThickness="0" />
                 <StackPanel FlowDirection="RightToLeft" Orientation="Horizontal">
-                    <Button Content="Добавить" Command="{Binding AddTaskCommand}" />
-                    <ComboBox>
+                    <Button x:Name="SaveTaskButton" Content="Сохранить" Visibility="{Binding IsTaskEditing, Converter={StaticResource VisibilityConverter}}" 
+                            Command="{Binding SaveTaskCommand}"/>
+                    <Button Content="Добавить" Command="{Binding AddTaskCommand}" 
+                            Visibility="{Binding IsNotTaskEditing, Converter={StaticResource VisibilityConverter}}"/>
+                    <ComboBox IsEnabled="{Binding IsRepeatComboboxEnabled}">
+                        <ComboBoxItem Content="Не повторять" />
                         <ComboBoxItem Content="Ежедневно" />
                         <ComboBoxItem Content="Рабочие дни" />
                         <ComboBoxItem Content="Выходные" />
@@ -54,7 +57,7 @@
                     <Button Content="Время" Command="{Binding EditTimeCommand}" />
                 </StackPanel>
             </StackPanel>
-            <ListBox ItemsSource="{Binding TasksList}" ItemTemplate="{StaticResource TaskTemplate}" />
+            <ListBox ItemsSource="{Binding CurrentTasksList}" ItemTemplate="{StaticResource TaskTemplate}" />
         </StackPanel>
 
     </Grid>

@@ -55,19 +55,24 @@ namespace ToDoApp.ViewModel
             {
                 _isTaskEditing = value;
                 OnPropertyChanged();
+                OnPropertyChanged("IsNotTaskEditing");
             }
         }
+
+        public bool IsNotTaskEditing => !IsTaskEditing;
+        public bool IsRepeatComboboxEnabled => CurrentTask.Date.HasValue;
 
         public ToDoAppViewModel()
         {
             CurrentTask = new TaskViewModel(new Task());
             CurrentList = new ToDoListViewModel(new ToDoList());
+            OnPropertyChanged("IsRepeatComboboxEnabled");
             //CurrentList = DefaultToDoLists[0];
-            // UpdateAllLists();
+            // InitializeAllLists();
         }
 
 
-        private void UpdateAllLists()
+        private void InitializeAllLists()
         {
             throw new NotImplementedException();
         }
@@ -136,7 +141,11 @@ namespace ToDoApp.ViewModel
                            {
                                _unitOfWork.Tasks.Add(CurrentTask.Task);
                                CurrentTasksList.Insert(0, CurrentTask);
-                               CurrentTask = new TaskViewModel(new Task());
+                               CurrentTask = new TaskViewModel(new Task
+                               {
+                                   ToDoList = CurrentList.ToDoList
+                               });
+                               OnPropertyChanged("IsRepeatComboboxEnabled");
                            }
                        ));
             }
@@ -155,6 +164,7 @@ namespace ToDoApp.ViewModel
                            var choosenTask = choosenItem.Content as TaskViewModel;
                            CurrentTask = choosenTask;
                            IsTaskEditing = true;
+                           OnPropertyChanged("IsRepeatComboboxEnabled");
                        }));
             }
         }
@@ -171,6 +181,7 @@ namespace ToDoApp.ViewModel
                            _unitOfWork.Tasks.Update(CurrentTask.Task);
                            IsTaskEditing = false;
                            CurrentTask = new TaskViewModel(new Task());
+                           OnPropertyChanged("IsRepeatComboboxEnabled");
                        }, obj => IsTaskEditing));
             }
         }
@@ -203,6 +214,7 @@ namespace ToDoApp.ViewModel
                        {
                            var dateWindow = new DateWindow(new DateViewModel(CurrentTask));
                            dateWindow.ShowDialog();
+                           OnPropertyChanged("IsRepeatComboboxEnabled");
                        }));
             }
         }

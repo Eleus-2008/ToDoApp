@@ -29,7 +29,7 @@ namespace ToDoApp.Model
                 {
                     if (RepeatingConditions != null && Date.HasValue)
                     {
-                        Date = RepeatingConditions.GetNextDateTime(Date.Value);
+                        Date = RepeatingConditions.GetNextDate(Date.Value);
                         OnDateUpdated();
                         return;
                     }
