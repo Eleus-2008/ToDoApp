@@ -39,10 +39,9 @@ namespace ToDoApp.Model
             }
             set
             {
-                RepeatingDaysOfWeek = Array.ConvertAll<string,DayOfWeek>(value.Split(','), input =>
-                {
-                    return (DayOfWeek)Enum.Parse(typeof(DayOfWeek), input);
-                }).ToList();
+                RepeatingDaysOfWeek = Array.ConvertAll<string,DayOfWeek>(value.Split(','),
+                    input => (DayOfWeek)Enum.Parse(typeof(DayOfWeek), input))
+                    .ToList();
             }
         }
 

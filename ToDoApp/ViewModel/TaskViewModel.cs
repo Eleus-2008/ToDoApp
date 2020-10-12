@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using ToDoApp.Model;
 using ToDoApp.Model.Enums;
@@ -124,6 +125,59 @@ namespace ToDoApp.ViewModel
                 {
                     return string.Empty;
                 }
+
+                if (RepeatingConditions.Type == TypeOfRepeatTimeSpan.Day &&
+                    RepeatingConditions.RepeatInterval == 1)
+                {
+                    return "Ежедневно";
+                }
+
+                var workdays = new List<DayOfWeek>
+                {
+                    DayOfWeek.Monday,
+                    DayOfWeek.Tuesday,
+                    DayOfWeek.Wednesday,
+                    DayOfWeek.Thursday,
+                    DayOfWeek.Friday
+                };
+                if (RepeatingConditions.Type == TypeOfRepeatTimeSpan.DayOfWeek &&
+                    RepeatingConditions.RepeatInterval == 1 &&
+                    !RepeatingConditions.RepeatingDaysOfWeek.Except(workdays).Any())
+                {
+                    return "Рабочие дни";
+                }
+
+                var weekends = new List<DayOfWeek>
+                {
+                    DayOfWeek.Saturday,
+                    DayOfWeek.Sunday
+                };
+                if (RepeatingConditions.Type == TypeOfRepeatTimeSpan.DayOfWeek &&
+                    RepeatingConditions.RepeatInterval == 1 &&
+                    !RepeatingConditions.RepeatingDaysOfWeek.Except(weekends).Any())
+                {
+                    return "Выходные";
+                }
+
+                if (RepeatingConditions.Type == TypeOfRepeatTimeSpan.DayOfWeek &&
+                    RepeatingConditions.RepeatInterval == 1 &&
+                    RepeatingConditions.RepeatingDaysOfWeek.Count == 1)
+                {
+                    return "Еженедельно";
+                }
+
+                if (RepeatingConditions.Type == TypeOfRepeatTimeSpan.Month &&
+                    RepeatingConditions.RepeatInterval == 1)
+                {
+                    return "Ежемесячно";
+                }
+
+                if (RepeatingConditions.Type == TypeOfRepeatTimeSpan.Year &&
+                    RepeatingConditions.RepeatInterval == 1)
+                {
+                    return "Ежегодно";
+                }
+
                 var text = "Повт. каждые ";
                 text += RepeatingConditions.RepeatInterval + " ";
                 switch (RepeatingConditions.Type)

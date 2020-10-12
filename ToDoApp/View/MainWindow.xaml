@@ -38,7 +38,7 @@
                             Command="{Binding SaveTaskCommand}"/>
                     <Button Content="Добавить" Command="{Binding AddTaskCommand}" 
                             Visibility="{Binding IsNotTaskEditing, Converter={StaticResource VisibilityConverter}}"/>
-                    <ComboBox IsEnabled="{Binding IsRepeatComboboxEnabled}">
+                    <ComboBox IsEnabled="{Binding IsRepeatComboboxEnabled}" SelectedIndex="{Binding SelectedRepeatingCondition}">
                         <ComboBoxItem Content="Не повторять" />
                         <ComboBoxItem Content="Ежедневно" />
                         <ComboBoxItem Content="Рабочие дни" />
