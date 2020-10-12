@@ -17,6 +17,7 @@ namespace ToDoApp.Model
             _commandSaver = commandSaver;
             _repository = repository;
             _context = context;
+            _repository.Load();
         }
 
         public List<T> GetAll()

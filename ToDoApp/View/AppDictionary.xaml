@@ -7,6 +7,8 @@
     <BooleanToVisibilityConverter x:Key="VisibilityConverter"/>
     
     <DataTemplate x:Key="SidebarItemTemplate">
+        <Button Command="{Binding DataContext.ChooseListCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
+                CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListBoxItem}}">
         <StackPanel Height="30" Orientation="Horizontal">
             <TextBox x:Name="ToDoListItemTextBox" VerticalContentAlignment="Center" BorderThickness="0"
                      IsReadOnly="True" IsReadOnlyCaretVisible="False"
@@ -24,6 +26,7 @@
                     CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListBoxItem}}" 
                     Content="X"/>
         </StackPanel>
+        </Button>
     </DataTemplate>
     
     <Style x:Key="ListBoxStyle">

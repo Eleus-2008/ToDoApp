@@ -20,7 +20,16 @@ namespace ToDoApp.ViewModel
         public ObservableCollection<ToDoListViewModel> ToDoLists { get; set; } =
             new ObservableCollection<ToDoListViewModel>();
 
-        public BindingList<TaskViewModel> CurrentTasksList { get; set; } = new BindingList<TaskViewModel>();
+        private BindingList<TaskViewModel> _currentTasksList;
+        public BindingList<TaskViewModel> CurrentTasksList
+        {
+            get => _currentTasksList;
+            set
+            {
+                _currentTasksList = value;
+                OnPropertyChanged();
+            }
+        }
 
         private TaskViewModel _currentTask;
 
@@ -42,6 +51,7 @@ namespace ToDoApp.ViewModel
             set
             {
                 _currentList = value;
+                CurrentTasksList = new BindingList<TaskViewModel>(_currentList.Tasks.ToList());
                 OnPropertyChanged();
             }
         }
@@ -66,15 +76,46 @@ namespace ToDoApp.ViewModel
         {
             CurrentTask = new TaskViewModel(new Task());
             CurrentList = new ToDoListViewModel(new ToDoList());
+            CurrentTasksList = new BindingList<TaskViewModel>();
             OnPropertyChanged("IsRepeatComboboxEnabled");
-            //CurrentList = DefaultToDoLists[0];
-            // InitializeAllLists();
+
+            InitializeToDoLists();
         }
-
-
-        private void InitializeAllLists()
+        
+        private void InitializeToDoLists()
         {
-            throw new NotImplementedException();
+            ToDoLists = new ObservableCollection<ToDoListViewModel>(_unitOfWork.ToDoLists.GetAll().SkipWhile(list => list.Name == "Все задачи")
+                .Select(list => new ToDoListViewModel(list)));
+
+            if (_unitOfWork.ToDoLists.GetAll().All(list => list.Name != "Все задачи"))
+            {
+                _unitOfWork.ToDoLists.Add(new ToDoList
+                {
+                    Name = "Все задачи"
+                });
+            }
+            
+            DefaultToDoLists.Add(new ToDoListViewModel(new ToDoList
+            {
+                Name = "Задачи",
+                Tasks = _unitOfWork.ToDoLists.GetAll().SelectMany(x => x.Tasks).ToList()
+            }));
+            
+            DefaultToDoLists.Add(new ToDoListViewModel(new ToDoList
+            {
+                Name = "Мой день",
+                Tasks = new List<Task>(_unitOfWork.ToDoLists.GetAll().SelectMany(x => x.Tasks).Where(task =>
+                {
+                    if (!task.Date.HasValue)
+                    {
+                        return true;
+                    }
+
+                    return task.Date == DateTime.Today;
+                }))
+            }));
+            
+            CurrentList = DefaultToDoLists[0];
         }
 
         private RelayCommand _addListCommand;
@@ -93,6 +134,22 @@ namespace ToDoApp.ViewModel
                            _unitOfWork.ToDoLists.Add(newList);
                            ToDoLists.Add(new ToDoListViewModel(newList));
                            CurrentList = ToDoLists.Last();
+                       }));
+            }
+        }
+
+        private RelayCommand _chooseListCommand;
+
+        public RelayCommand ChooseListCommand
+        {
+            get
+            {
+                return _chooseListCommand ??
+                       (_chooseListCommand = new RelayCommand(obj =>
+                       {
+                           var choosenItem = obj as ListBoxItem;
+                           var choosenToDoList = choosenItem.Content as ToDoListViewModel;
+                           CurrentList = choosenToDoList;
                        }));
             }
         }
@@ -126,6 +183,7 @@ namespace ToDoApp.ViewModel
                            var choosenToDoList = choosenItem.Content as ToDoListViewModel;
                            _unitOfWork.ToDoLists.Remove(choosenToDoList.ToDoList);
                            ToDoLists.Remove(choosenToDoList);
+                           CurrentList = DefaultToDoLists[0];
                        }));
             }
         }
@@ -139,12 +197,21 @@ namespace ToDoApp.ViewModel
                 return _addTaskCommand ??
                        (_addTaskCommand = new RelayCommand(obj =>
                            {
+                               if (CurrentList == DefaultToDoLists.First(list => list.Name == "Задачи") ||
+                                   CurrentList == DefaultToDoLists.First(list => list.Name == "Мой день"))
+                               {
+                                   CurrentTask.Task.ToDoList = _unitOfWork.ToDoLists.GetAll()
+                                       .First(list => list.Name == "Все задачи");
+                               }
+                               else
+                               {
+                                   CurrentTask.Task.ToDoList = CurrentList.ToDoList;
+                               }
+                               
                                _unitOfWork.Tasks.Add(CurrentTask.Task);
                                CurrentTasksList.Insert(0, CurrentTask);
-                               CurrentTask = new TaskViewModel(new Task
-                               {
-                                   ToDoList = CurrentList.ToDoList
-                               });
+
+                               CurrentTask = new TaskViewModel(new Task());
                                OnPropertyChanged("IsRepeatComboboxEnabled");
                            }
                        ));

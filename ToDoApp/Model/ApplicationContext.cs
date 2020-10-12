@@ -32,7 +32,7 @@ namespace ToDoApp.Model
                         .HasColumnType("TEXT");
                 })
                 .ToTable("Tasks");
-            
+
             modelBuilder.Entity<ToDoList>().ToTable("ToDoLists");
         }
     }
