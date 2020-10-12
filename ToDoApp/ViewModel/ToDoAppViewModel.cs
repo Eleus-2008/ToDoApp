@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 using ToDoApp.Model;
+using ToDoApp.Model.Enums;
 
 namespace ToDoApp.ViewModel
 {
@@ -21,6 +22,7 @@ namespace ToDoApp.ViewModel
             new ObservableCollection<ToDoListViewModel>();
 
         private BindingList<TaskViewModel> _currentTasksList;
+
         public BindingList<TaskViewModel> CurrentTasksList
         {
             get => _currentTasksList;
@@ -72,6 +74,138 @@ namespace ToDoApp.ViewModel
         public bool IsNotTaskEditing => !IsTaskEditing;
         public bool IsRepeatComboboxEnabled => CurrentTask.Date.HasValue;
 
+        public int SelectedRepeatingCondition
+        {
+            get
+            {
+                var repeatingConditions = CurrentTask.RepeatingConditions;
+
+                if (repeatingConditions == null)
+                {
+                    return 0;
+                }
+
+                if (repeatingConditions.Type == TypeOfRepeatTimeSpan.Day &&
+                    repeatingConditions.RepeatInterval == 1)
+                {
+                    return 1;
+                }
+
+                var workdays = new List<DayOfWeek>
+                {
+                    DayOfWeek.Monday,
+                    DayOfWeek.Tuesday,
+                    DayOfWeek.Wednesday,
+                    DayOfWeek.Thursday,
+                    DayOfWeek.Friday
+                };
+                if (repeatingConditions.Type == TypeOfRepeatTimeSpan.DayOfWeek &&
+                    repeatingConditions.RepeatInterval == 1 &&
+                    !repeatingConditions.RepeatingDaysOfWeek.Except(workdays).Any())
+                {
+                    return 2;
+                }
+
+                var weekends = new List<DayOfWeek>
+                {
+                    DayOfWeek.Saturday,
+                    DayOfWeek.Sunday
+                };
+                if (repeatingConditions.Type == TypeOfRepeatTimeSpan.DayOfWeek &&
+                    repeatingConditions.RepeatInterval == 1 &&
+                    !repeatingConditions.RepeatingDaysOfWeek.Except(weekends).Any())
+                {
+                    return 3;
+                }
+
+                if (repeatingConditions.Type == TypeOfRepeatTimeSpan.DayOfWeek &&
+                    repeatingConditions.RepeatInterval == 1 &&
+                    repeatingConditions.RepeatingDaysOfWeek.Count == 1)
+                {
+                    return 4;
+                }
+
+                if (repeatingConditions.Type == TypeOfRepeatTimeSpan.Month &&
+                    repeatingConditions.RepeatInterval == 1)
+                {
+                    return 5;
+                }
+
+                if (repeatingConditions.Type == TypeOfRepeatTimeSpan.Year &&
+                    repeatingConditions.RepeatInterval == 1)
+                {
+                    return 6;
+                }
+
+                return 7;
+            }
+            set
+            {
+                switch (value)
+                {
+                    case 0:
+                        CurrentTask.RepeatingConditions = null;
+                        break;
+                    case 1:
+                        CurrentTask.RepeatingConditions = new RepeatingConditions
+                        {
+                            Type = TypeOfRepeatTimeSpan.Day,
+                            RepeatInterval = 1
+                        };
+                        break;
+                    case 2: CurrentTask.RepeatingConditions = new RepeatingConditions
+                        {
+                            Type = TypeOfRepeatTimeSpan.DayOfWeek,
+                            RepeatInterval = 1,
+                            RepeatingDaysOfWeek = new List<DayOfWeek>
+                            {
+                                DayOfWeek.Monday,
+                                DayOfWeek.Tuesday,
+                                DayOfWeek.Wednesday,
+                                DayOfWeek.Thursday,
+                                DayOfWeek.Friday
+                            }
+                        };
+                        break;
+                    case 3: CurrentTask.RepeatingConditions = new RepeatingConditions
+                        {
+                            Type = TypeOfRepeatTimeSpan.DayOfWeek,
+                            RepeatInterval = 1,
+                            RepeatingDaysOfWeek = new List<DayOfWeek>
+                            {
+                                DayOfWeek.Saturday,
+                                DayOfWeek.Sunday
+                            }
+                        };
+                        break;
+                    case 4: CurrentTask.RepeatingConditions = new RepeatingConditions
+                        {
+                            Type = TypeOfRepeatTimeSpan.DayOfWeek,
+                            RepeatInterval = 1,
+                            RepeatingDaysOfWeek = new List<DayOfWeek>
+                            {
+                                CurrentTask.Date.Value.DayOfWeek
+                            }
+                        };
+                        break;
+                    case 5: CurrentTask.RepeatingConditions = new RepeatingConditions
+                        {
+                            Type = TypeOfRepeatTimeSpan.Month,
+                            RepeatInterval = 1
+                        };
+                        break;
+                    case 6: CurrentTask.RepeatingConditions = new RepeatingConditions
+                        {
+                            Type = TypeOfRepeatTimeSpan.Year,
+                            RepeatInterval = 1
+                        };
+                        break;
+                }
+
+                OnPropertyChanged();
+            }
+        }
+
         public ToDoAppViewModel()
         {
             CurrentTask = new TaskViewModel(new Task());
@@ -81,10 +215,11 @@ namespace ToDoApp.ViewModel
 
             InitializeToDoLists();
         }
-        
+
         private void InitializeToDoLists()
         {
-            ToDoLists = new ObservableCollection<ToDoListViewModel>(_unitOfWork.ToDoLists.GetAll().SkipWhile(list => list.Name == "Все задачи")
+            ToDoLists = new ObservableCollection<ToDoListViewModel>(_unitOfWork.ToDoLists.GetAll()
+                .SkipWhile(list => list.Name == "Все задачи")
                 .Select(list => new ToDoListViewModel(list)));
 
             if (_unitOfWork.ToDoLists.GetAll().All(list => list.Name != "Все задачи"))
@@ -94,13 +229,13 @@ namespace ToDoApp.ViewModel
                     Name = "Все задачи"
                 });
             }
-            
+
             DefaultToDoLists.Add(new ToDoListViewModel(new ToDoList
             {
                 Name = "Задачи",
                 Tasks = _unitOfWork.ToDoLists.GetAll().SelectMany(x => x.Tasks).ToList()
             }));
-            
+
             DefaultToDoLists.Add(new ToDoListViewModel(new ToDoList
             {
                 Name = "Мой день",
@@ -114,7 +249,7 @@ namespace ToDoApp.ViewModel
                     return task.Date == DateTime.Today;
                 }))
             }));
-            
+
             CurrentList = DefaultToDoLists[0];
         }
 
@@ -207,7 +342,7 @@ namespace ToDoApp.ViewModel
                                {
                                    CurrentTask.Task.ToDoList = CurrentList.ToDoList;
                                }
-                               
+
                                _unitOfWork.Tasks.Add(CurrentTask.Task);
                                CurrentTasksList.Insert(0, CurrentTask);
 
@@ -297,6 +432,7 @@ namespace ToDoApp.ViewModel
                        {
                            var repeatDateWindow = new RepeatDateWindow(new RepeatDateViewModel(CurrentTask));
                            repeatDateWindow.ShowDialog();
+                           OnPropertyChanged("SelectedRepeatingCondition");
                        }));
             }
         }
