@@ -236,7 +236,7 @@ namespace ToDoApp.ViewModel
             set
             {
                 Task.Priority = value;
-                OnPropertyChanged();
+                OnPropertyChanged("TextPriority");
             }
         }
 
@@ -249,7 +249,7 @@ namespace ToDoApp.ViewModel
                     return "Низкий";
                 }
 
-                if (4 <= Priority && Priority >= 7)
+                if (4 <= Priority && Priority <= 7)
                 {
                     return "Средний";
                 }
@@ -260,21 +260,6 @@ namespace ToDoApp.ViewModel
                 }
 
                 return "Средний";
-            }
-            set
-            {
-                switch (value.ToLower())
-                {
-                    case "низкий": Priority = 2;
-                        break;
-                    case "средний": Priority = 5;
-                        break;
-                    case "высокий": Priority = 8;
-                        break;
-                    default: Priority = 5;
-                        break;
-                }
-                OnPropertyChanged();
             }
         }
 

@@ -48,11 +48,11 @@
                         <ComboBoxItem Content="Ежегодно" />
                         <Button Content="...Настроить" Command="{Binding EditRepeatTimeCommand}" />
                     </ComboBox>
-                    <ComboBox>
-                        <ComboBoxItem Content="Высокий" />
-                        <ComboBoxItem Content="Средний" />
+                    <ComboBox SelectedIndex="{Binding SelectedPriority}">
                         <ComboBoxItem Content="Низкий" />
-                        <TextBox Width="50" Text="1-10" HorizontalContentAlignment="Center" />
+                        <ComboBoxItem Content="Средний" />
+                        <ComboBoxItem Content="Высокий" />
+                        <!--<TextBox Width="50" Text="1-10" HorizontalContentAlignment="Center" />-->
                     </ComboBox>
                     <Button Content="Время" Command="{Binding EditTimeCommand}" />
                 </StackPanel>
