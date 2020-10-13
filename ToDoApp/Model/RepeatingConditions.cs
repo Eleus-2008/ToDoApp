@@ -35,12 +35,13 @@ namespace ToDoApp.Model
         {
             get
             {
-                return string.Join(",", RepeatingDaysOfWeek.ConvertAll(input => nameof(input)));
+                return string.Join(",", RepeatingDaysOfWeek.ConvertAll(input => input.ToString()));
             }
             set
             {
-                RepeatingDaysOfWeek = Array.ConvertAll<string,DayOfWeek>(value.Split(','),
-                    input => (DayOfWeek)Enum.Parse(typeof(DayOfWeek), input))
+                RepeatingDaysOfWeek = value.Split(',')
+                    .Where(x => x != "")
+                    .Select(x => (DayOfWeek) Enum.Parse(typeof(DayOfWeek), x))
                     .ToList();
             }
         }
