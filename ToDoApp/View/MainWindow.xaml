@@ -3,7 +3,6 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:i="System.Windows.Interactivity"
         xmlns:local="clr-namespace:ToDoApp"
         xmlns:viewmodel="clr-namespace:ToDoApp.ViewModel"
         mc:Ignorable="d"
@@ -14,31 +13,41 @@
 
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="200" />
-            <ColumnDefinition />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <StackPanel>
-            <ListBox HorizontalContentAlignment="Stretch" ItemsSource="{Binding DefaultToDoLists}" Margin="0,20,0,0" Style="{StaticResource ListBoxStyle}" />
-            <Separator Margin="0,10" />
-            <StackPanel Orientation="Horizontal">
-                <TextBox x:Name="AddListTextBox" Text="Добавить список..." />
-                <Button Content="+" Command="{Binding AddListCommand}"
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <StackPanel>
+            <ListBox ItemsSource="{Binding DefaultToDoLists}" Margin="0,20,0,0" Style="{StaticResource ListBoxStyle}" />
+            <Separator Margin="5,10" />
+            <StackPanel Orientation="Horizontal" Height="30">
+                <TextBox x:Name="AddListTextBox" Style="{StaticResource MyWaterMarkStyle}" Tag="Добавить список..." Width="160" Margin="10,0,7,0" VerticalContentAlignment="Center"/>
+                <Button Content="+" Width="15" Command="{Binding AddListCommand}"
                         CommandParameter="{Binding Text, ElementName=AddListTextBox}" />
             </StackPanel>
-            <ListBox x:Name="ToDoListsBox" HorizontalContentAlignment="Stretch"  ItemsSource="{Binding ToDoLists}" Style="{StaticResource ListBoxStyle}" />
-        </StackPanel>
+            </StackPanel>
+            <ListBox Grid.Row="1" x:Name="ToDoListsBox" HorizontalContentAlignment="Stretch" ItemsSource="{Binding ToDoLists}" Style="{StaticResource ListBoxStyle}" />
+        </Grid>
 
-        <StackPanel Grid.Column="1" Margin="20">
+        <Grid Grid.Column="1" Margin="20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
             <StackPanel>
-                <TextBox IsReadOnly="False" Text="{Binding CurrentTask.Name}" VerticalContentAlignment="Center"
-                         BorderThickness="0" />
+                <TextBox IsReadOnly="False" Text="{Binding CurrentTask.Name}" Style="{StaticResource MyWaterMarkStyle}" Tag="Добавить задачу..." VerticalContentAlignment="Center"
+                         BorderThickness="0" Margin="0,5"/>
                 <StackPanel FlowDirection="RightToLeft" Orientation="Horizontal">
-                    <Button x:Name="SaveTaskButton" Content="Сохранить" Visibility="{Binding IsTaskEditing, Converter={StaticResource VisibilityConverter}}" 
+                    <Button x:Name="SaveTaskButton" Content="Сохранить" Margin="5,0" Visibility="{Binding IsTaskEditing, Converter={StaticResource VisibilityConverter}}" 
                             Command="{Binding SaveTaskCommand}"/>
-                    <Button Content="Добавить" Command="{Binding AddTaskCommand}" 
+                    <Button Content="Добавить" Margin="5,0" Command="{Binding AddTaskCommand}" 
                             Visibility="{Binding IsNotTaskEditing, Converter={StaticResource VisibilityConverter}}"/>
-                    <ComboBox IsEnabled="{Binding IsRepeatComboboxEnabled}" SelectedIndex="{Binding SelectedRepeatingCondition}">
+                    <ComboBox Margin="5,0" IsEnabled="{Binding IsRepeatComboboxEnabled}" SelectedIndex="{Binding SelectedRepeatingCondition}">
                         <ComboBoxItem Content="Не повторять" />
                         <ComboBoxItem Content="Ежедневно" />
                         <ComboBoxItem Content="Рабочие дни" />
@@ -48,17 +57,17 @@
                         <ComboBoxItem Content="Ежегодно" />
                         <Button Content="...Настроить" Command="{Binding EditRepeatTimeCommand}" />
                     </ComboBox>
-                    <ComboBox SelectedIndex="{Binding SelectedPriority}">
+                    <ComboBox Margin="5,0" SelectedIndex="{Binding SelectedPriority}">
                         <ComboBoxItem Content="Низкий" />
                         <ComboBoxItem Content="Средний" />
                         <ComboBoxItem Content="Высокий" />
                         <!--<TextBox Width="50" Text="1-10" HorizontalContentAlignment="Center" />-->
                     </ComboBox>
-                    <Button Content="Время" Command="{Binding EditTimeCommand}" />
+                    <Button Margin="5,0" Content="Время" Command="{Binding EditTimeCommand}" />
                 </StackPanel>
             </StackPanel>
-            <ListBox ItemsSource="{Binding CurrentTasksList}" ItemTemplate="{StaticResource TaskTemplate}" />
-        </StackPanel>
+            <ListBox Grid.Row="1" Margin="0,10" ItemsSource="{Binding CurrentTasksList}" ItemTemplate="{StaticResource TaskTemplate}" BorderThickness="0"/>
+        </Grid>
 
     </Grid>
 </Window>
