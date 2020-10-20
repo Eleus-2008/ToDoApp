@@ -297,6 +297,10 @@ namespace ToDoApp.ViewModel
                        {
                            var choosenItem = obj as ListBoxItem;
                            var choosenToDoList = choosenItem.Content as ToDoListViewModel;
+                           foreach (var taskViewModel in choosenToDoList.Tasks)
+                           {
+                               _unitOfWork.Tasks.Remove(taskViewModel.Task);
+                           }        
                            _unitOfWork.ToDoLists.Remove(choosenToDoList.ToDoList);
                            ToDoLists.Remove(choosenToDoList);
                            CurrentList = DefaultToDoLists[0];
