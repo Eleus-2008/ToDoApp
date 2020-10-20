@@ -32,15 +32,31 @@
         </Setter>
     </Style>
     
+    <DataTemplate x:Key="DefaultListsSidebarItemTemplate">
+        <StackPanel Height="30" Orientation="Horizontal">
+            <TextBox x:Name="ToDoListItemTextBox" Width="160" Margin="5,0" VerticalContentAlignment="Center" BorderThickness="0" 
+                     IsReadOnly="True" IsReadOnlyCaretVisible="False"
+                     Text="{Binding Name}">
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="PreviewMouseLeftButtonUp">
+                        <i:InvokeCommandAction
+                            Command="{Binding DataContext.ChooseListCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
+                            CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListBoxItem}}" />
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+            </TextBox>
+        </StackPanel>
+    </DataTemplate>
+    
     <DataTemplate x:Key="SidebarItemTemplate">
         <StackPanel Height="30" Orientation="Horizontal">
             <TextBox x:Name="ToDoListItemTextBox" Width="160" Margin="5,0" VerticalContentAlignment="Center" BorderThickness="0" 
                      IsReadOnly="True" IsReadOnlyCaretVisible="False"
                      Text="{Binding Name}"
                      MouseDoubleClick="ToDoListItemTextBox_MouseDoubleClick"
-                     LostFocus="ToDoListItemTextBox_LostFocus">
+                     LostKeyboardFocus="ToDoListItemTextBox_LostKeyboardFocus">
                 <i:Interaction.Triggers>
-                    <i:EventTrigger EventName="LostFocus">
+                    <i:EventTrigger EventName="LostKeyboardFocus">
                         <i:InvokeCommandAction
                             Command="{Binding DataContext.EditListNameCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
                             CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListBoxItem}}" />
@@ -84,7 +100,6 @@
     </DataTemplate>
     
     <Style x:Key="ListBoxStyle">
-        <Setter Property="ListBox.ItemTemplate" Value="{StaticResource SidebarItemTemplate}" />
         <Setter Property="ListBox.BorderBrush" Value="{x:Null}" />
     </Style>
 

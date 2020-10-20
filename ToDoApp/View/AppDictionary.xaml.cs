@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 
 namespace ToDoApp.View
 {
@@ -15,13 +16,13 @@ namespace ToDoApp.View
             InitializeComponent();
         }
 
-        private void ToDoListItemTextBox_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        private void ToDoListItemTextBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             var nameTextBox = sender as TextBox;
-            nameTextBox.IsReadOnly = false;            
+            nameTextBox.IsReadOnly = false;
         }
 
-        private void ToDoListItemTextBox_LostFocus(object sender, RoutedEventArgs e)
+        private void ToDoListItemTextBox_LostKeyboardFocus(object sender, RoutedEventArgs e)
         {
             var nameTextBox = sender as TextBox;
             nameTextBox.IsReadOnly = true;
