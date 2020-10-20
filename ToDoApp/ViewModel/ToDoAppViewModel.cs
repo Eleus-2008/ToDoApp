@@ -220,7 +220,7 @@ namespace ToDoApp.ViewModel
             DefaultToDoLists.Add(new ToDoListViewModel(new ToDoList
             {
                 Name = "Мой день",
-                Tasks = new List<Task>(_unitOfWork.ToDoLists.GetAll().SelectMany(x => x.Tasks).Where(task =>
+                Tasks = _unitOfWork.ToDoLists.GetAll().SelectMany(x => x.Tasks).Where(task =>
                 {
                     if (!task.Date.HasValue)
                     {
@@ -228,7 +228,7 @@ namespace ToDoApp.ViewModel
                     }
 
                     return task.Date == DateTime.Today;
-                }))
+                }).ToList()
             }));
 
             CurrentList = DefaultToDoLists[0];
@@ -322,6 +322,7 @@ namespace ToDoApp.ViewModel
                                {
                                    CurrentTask.Task.ToDoList = _unitOfWork.ToDoLists.GetAll()
                                        .First(list => list.Name == "Все задачи");
+                                   CurrentList.ToDoList.Tasks.Add(CurrentTask.Task);
                                }
                                else
                                {
