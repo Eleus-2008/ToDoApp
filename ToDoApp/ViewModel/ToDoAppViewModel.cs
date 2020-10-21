@@ -55,6 +55,22 @@ namespace ToDoApp.ViewModel
             get => _currentList;
             set
             {
+                if (value.Name == "Задачи")
+                {
+                    value.ToDoList.Tasks = _unitOfWork.ToDoLists.GetAll().SelectMany(x => x.Tasks).ToList();
+                }
+                if (value.Name == "Мой день")
+                {
+                    value.ToDoList.Tasks = _unitOfWork.ToDoLists.GetAll().SelectMany(x => x.Tasks).Where(task =>
+                    {
+                        if (!task.Date.HasValue)
+                        {
+                            return true;
+                        }
+
+                        return task.Date == DateTime.Today;
+                    }).ToList();
+                }
                 _currentList = value;
                 CurrentTasksList = new BindingList<TaskViewModel>(_currentList.Tasks.ToList());
                 OnPropertyChanged();
@@ -322,7 +338,6 @@ namespace ToDoApp.ViewModel
                                {
                                    CurrentTask.Task.ToDoList = _unitOfWork.ToDoLists.GetAll()
                                        .First(list => list.Name == "Все задачи");
-                                   CurrentList.ToDoList.Tasks.Add(CurrentTask.Task);
                                }
                                else
                                {
