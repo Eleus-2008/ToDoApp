@@ -259,13 +259,15 @@ namespace ToDoApp.ViewModel
                 return _addListCommand ??
                        (_addListCommand = new RelayCommand(obj =>
                        {
+                           var textBox = obj as TextBox;
                            var newList = new ToDoList
                            {
-                               Name = obj as string
+                               Name = textBox.Text
                            };
                            _unitOfWork.ToDoLists.Add(newList);
                            ToDoLists.Add(new ToDoListViewModel(newList));
                            CurrentList = ToDoLists.Last();
+                           textBox.Text = string.Empty;
                        }));
             }
         }

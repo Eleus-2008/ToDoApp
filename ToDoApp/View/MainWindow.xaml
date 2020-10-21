@@ -28,7 +28,7 @@
             <StackPanel Orientation="Horizontal" Height="30">
                 <TextBox x:Name="AddListTextBox" Style="{StaticResource MyWaterMarkStyle}" Tag="Добавить список..." Width="160" Margin="10,0,7,0" VerticalContentAlignment="Center"/>
                 <Button Content="+" Width="15" Command="{Binding AddListCommand}"
-                        CommandParameter="{Binding Text, ElementName=AddListTextBox}" />
+                        CommandParameter="{Binding ElementName=AddListTextBox}" />
             </StackPanel>
             </StackPanel>
             <ListBox Grid.Row="1" x:Name="ToDoListsBox" HorizontalContentAlignment="Stretch" ItemsSource="{Binding ToDoLists}" Style="{StaticResource ListBoxStyle}"  ItemTemplate="{StaticResource SidebarItemTemplate}"/>
