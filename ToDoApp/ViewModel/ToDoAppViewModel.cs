@@ -279,9 +279,9 @@ namespace ToDoApp.ViewModel
                 return _chooseListCommand ??
                        (_chooseListCommand = new RelayCommand(obj =>
                        {
-                           var choosenItem = obj as ListBoxItem;
-                           var choosenToDoList = choosenItem.Content as ToDoListViewModel;
-                           CurrentList = choosenToDoList;
+                           var chosenItem = obj as ListBoxItem;
+                           var chosenToDoList = chosenItem.Content as ToDoListViewModel;
+                           CurrentList = chosenToDoList;
                        }));
             }
         }
@@ -295,9 +295,9 @@ namespace ToDoApp.ViewModel
                 return _editListNameCommand ??
                        (_editListNameCommand = new RelayCommand(obj =>
                        {
-                           var choosenItem = obj as ListBoxItem;
-                           var choosenToDoList = choosenItem.Content as ToDoListViewModel;
-                           _unitOfWork.ToDoLists.Update(choosenToDoList.ToDoList);
+                           var chosenItem = obj as ListBoxItem;
+                           var chosenToDoList = chosenItem.Content as ToDoListViewModel;
+                           _unitOfWork.ToDoLists.Update(chosenToDoList.ToDoList);
                        }));
             }
         }
@@ -311,14 +311,14 @@ namespace ToDoApp.ViewModel
                 return _deleteListCommand ??
                        (_deleteListCommand = new RelayCommand(obj =>
                        {
-                           var choosenItem = obj as ListBoxItem;
-                           var choosenToDoList = choosenItem.Content as ToDoListViewModel;
-                           foreach (var taskViewModel in choosenToDoList.Tasks)
+                           var chosenItem = obj as ListBoxItem;
+                           var chosenToDoList = chosenItem.Content as ToDoListViewModel;
+                           foreach (var taskViewModel in chosenToDoList.Tasks)
                            {
                                _unitOfWork.Tasks.Remove(taskViewModel.Task);
                            }        
-                           _unitOfWork.ToDoLists.Remove(choosenToDoList.ToDoList);
-                           ToDoLists.Remove(choosenToDoList);
+                           _unitOfWork.ToDoLists.Remove(chosenToDoList.ToDoList);
+                           ToDoLists.Remove(chosenToDoList);
                            CurrentList = DefaultToDoLists[0];
                        }));
             }
@@ -362,9 +362,9 @@ namespace ToDoApp.ViewModel
                 return _editTaskCommand ??
                        (_editTaskCommand = new RelayCommand(obj =>
                        {
-                           var choosenItem = obj as ListBoxItem;
-                           var choosenTask = choosenItem.Content as TaskViewModel;
-                           CurrentTask = choosenTask;
+                           var chosenItem = obj as ListBoxItem;
+                           var chosenTask = chosenItem.Content as TaskViewModel;
+                           CurrentTask = chosenTask;
                            IsTaskEditing = true;
                        }));
             }
@@ -379,9 +379,9 @@ namespace ToDoApp.ViewModel
                 return _doTaskCommand ??
                        (_doTaskCommand = new RelayCommand(obj =>
                        {
-                           var choosenItem = obj as ListBoxItem;
-                           var choosenTask = choosenItem.Content as TaskViewModel;
-                           _unitOfWork.Tasks.Update(choosenTask.Task);
+                           var chosenItem = obj as ListBoxItem;
+                           var chosenTask = chosenItem.Content as TaskViewModel;
+                           _unitOfWork.Tasks.Update(chosenTask.Task);
                        }));
             }
         }
@@ -411,10 +411,10 @@ namespace ToDoApp.ViewModel
                 return _deleteTaskCommand ??
                        (_deleteTaskCommand = new RelayCommand(obj =>
                        {
-                           var choosenItem = obj as ListBoxItem;
-                           var choosenTask = choosenItem.Content as TaskViewModel;
-                           _unitOfWork.Tasks.Remove(choosenTask.Task);
-                           CurrentTasksList.Remove(choosenTask);
+                           var chosenItem = obj as ListBoxItem;
+                           var chosenTask = chosenItem.Content as TaskViewModel;
+                           _unitOfWork.Tasks.Remove(chosenTask.Task);
+                           CurrentTasksList.Remove(chosenTask);
                        }));
             }
         }
