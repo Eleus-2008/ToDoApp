@@ -370,6 +370,22 @@ namespace ToDoApp.ViewModel
             }
         }
 
+        private RelayCommand _doTaskCommand;
+
+        public RelayCommand DoTaskCommand
+        {
+            get
+            {
+                return _doTaskCommand ??
+                       (_doTaskCommand = new RelayCommand(obj =>
+                       {
+                           var choosenItem = obj as ListBoxItem;
+                           var choosenTask = choosenItem.Content as TaskViewModel;
+                           _unitOfWork.Tasks.Update(choosenTask.Task);
+                       }));
+            }
+        }
+        
         private RelayCommand _saveTaskCommand;
 
         public RelayCommand SaveTaskCommand

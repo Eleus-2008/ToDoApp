@@ -78,7 +78,20 @@
     <DataTemplate x:Key="TaskTemplate">
         <StackPanel Margin="0,5">
             <StackPanel Orientation="Horizontal">
-                <CheckBox IsChecked="{Binding IsDone}" />
+                <CheckBox IsChecked="{Binding IsDone}">
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="Checked">
+                            <i:InvokeCommandAction
+                                Command="{Binding DataContext.DoTaskCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
+                                CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListBoxItem}}" />
+                        </i:EventTrigger>
+                        <i:EventTrigger EventName="Unchecked">
+                            <i:InvokeCommandAction
+                                Command="{Binding DataContext.DoTaskCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
+                                CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListBoxItem}}" />
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </CheckBox>
                 <TextBlock Text="{Binding Name}" />
             </StackPanel>
             <StackPanel Orientation="Horizontal" FlowDirection="RightToLeft">
