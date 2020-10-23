@@ -20,7 +20,7 @@ namespace ToDoApp.ViewModel
             }
         }
 
-        public IEnumerable<TaskViewModel> Tasks => ToDoList.Tasks.Select(task => new TaskViewModel(task));
+        public IEnumerable<TaskViewModel> Tasks => ToDoList.Tasks.Select(task => new TaskViewModel(task)).ToList();
 
 
         public ToDoListViewModel(ToDoList toDoList)

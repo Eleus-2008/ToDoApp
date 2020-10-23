@@ -1,18 +1,17 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using ToDoApp.Model.Enums;
 using ToDoApp.Model.Interfaces;
 
 namespace ToDoApp.Model
 {
-    [Owned]
     public class RepeatingConditions : IEntity
     {
         public int Id { get; set; }
         
-        [Column(TypeName = "TEXT")]
         public TypeOfRepeatTimeSpan Type { get; set; }
 
         private int _repeatInterval = 1;
@@ -29,9 +28,23 @@ namespace ToDoApp.Model
                 _repeatInterval = value;
             }
         }
-
-        [Column(TypeName = "TEXT")]
+        
         public List<DayOfWeek> RepeatingDaysOfWeek { get; set; } = new List<DayOfWeek>();
+
+        public string SerializedDaysOfWeek
+        {
+            get
+            {
+                return string.Join(",", RepeatingDaysOfWeek.ConvertAll(input => input.ToString()));
+            }
+            set
+            {
+                RepeatingDaysOfWeek = value.Split(',')
+                    .Where(x => x != "")
+                    .Select(x => (DayOfWeek) Enum.Parse(typeof(DayOfWeek), x))
+                    .ToList();
+            }
+        }
 
         /// <summary>
         /// Вычисляет следующую дату (не учитывая время) повторяющейся задачи 
@@ -39,27 +52,51 @@ namespace ToDoApp.Model
         /// <param name="latestPlannedDate"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
-        public DateTime GetNextDateTime(DateTime latestPlannedDate)
+        public DateTime GetNextDate(DateTime latestPlannedDate)
         {
             switch (Type)
             {
                 case TypeOfRepeatTimeSpan.Day:
                     return latestPlannedDate.AddDays(RepeatInterval);
                 case TypeOfRepeatTimeSpan.DayOfWeek:
-                    foreach (var dayOfWeek in RepeatingDaysOfWeek)
+                    var j = (int) latestPlannedDate.DayOfWeek + 7;
+                    for (var i = (int) latestPlannedDate.DayOfWeek + 1; i < j; i++)
                     {
-                        if (dayOfWeek < latestPlannedDate.DayOfWeek)
+                        var dayOfWeekNumber = i;
+                        if (dayOfWeekNumber >= 7)
                         {
-                            return latestPlannedDate.AddDays(dayOfWeek + 7 - latestPlannedDate.DayOfWeek +
-                                                             (RepeatInterval - 1) * 7);
+                            dayOfWeekNumber -= 7;
                         }
 
-                        if (dayOfWeek >= latestPlannedDate.DayOfWeek)
+                        var dayOfWeek = (DayOfWeek) dayOfWeekNumber;
+                        if (RepeatingDaysOfWeek.Contains(dayOfWeek))
                         {
-                            return latestPlannedDate.AddDays(dayOfWeek - latestPlannedDate.DayOfWeek +
-                                                             (RepeatInterval - 1) * 7);
+                            if (dayOfWeek < latestPlannedDate.DayOfWeek && dayOfWeek != DayOfWeek.Sunday)
+                            {
+                                return latestPlannedDate.AddDays(dayOfWeekNumber + 7 -
+                                                                 (int) latestPlannedDate.DayOfWeek +
+                                                                 (RepeatInterval - 1) * 7);
+                            }
+
+                            if (latestPlannedDate.DayOfWeek == DayOfWeek.Sunday)
+                            {
+                                return latestPlannedDate.AddDays(dayOfWeekNumber -
+                                                                 (int) latestPlannedDate.DayOfWeek +
+                                                                 (RepeatInterval - 1) * 7);
+                            }
+                            
+                            if (dayOfWeek >= latestPlannedDate.DayOfWeek)
+                            {
+                                return latestPlannedDate.AddDays(dayOfWeekNumber - (int) latestPlannedDate.DayOfWeek);
+                            }
+
+                            if (dayOfWeek == DayOfWeek.Sunday)
+                            {
+                                return latestPlannedDate.AddDays(7 - (int) latestPlannedDate.DayOfWeek);
+                            }
                         }
                     }
+
 
                     throw new ArgumentOutOfRangeException(null, "Ошибка в вычислении даты повтора");
                 case TypeOfRepeatTimeSpan.Month:

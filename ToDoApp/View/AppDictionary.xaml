@@ -1,54 +1,140 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:local="clr-namespace:ToDoApp"
-                    xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
+                    xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
                     x:Class="ToDoApp.View.AppDictionary"
                     x:ClassModifier="public">
-    <DataTemplate x:Key="SidebarItemTemplate">
+    <BooleanToVisibilityConverter x:Key="VisibilityConverter" />
+    
+    <Style x:Key="MyWaterMarkStyle" TargetType="{x:Type TextBox}">   
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type TextBox}">
+                    <Grid>
+                        <Border Background="White" BorderBrush="#FF7D8683" BorderThickness="1"/>
+                        <ScrollViewer x:Name="PART_ContentHost" Margin="5,0,0,0" VerticalAlignment="Center" />
+                        <Label Margin="5,0,0,0" x:Name="WaterMarkLabel" Content="{TemplateBinding Tag}" VerticalAlignment="Center"
+                               Visibility="Collapsed" Foreground="Gray" FontFamily="Arial"/>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="Text" Value=""/>
+                            </MultiTrigger.Conditions>
+                            <Setter Property="Visibility" TargetName="WaterMarkLabel" Value="Visible"/>
+                        </MultiTrigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Foreground" Value="DimGray"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    
+    <Style x:Key="ListBoxStyle">
+        <Setter Property="ListBox.BorderBrush" Value="{x:Null}" />
+    </Style>
+    
+    <DataTemplate x:Key="DefaultListsSidebarItemTemplate">
         <StackPanel Height="30" Orientation="Horizontal">
-            <!-- <Image Source="{Binding Image}" Height="32" Width="32" HorizontalAlignment="Left" VerticalAlignment="Center"/> -->
-            <TextBox x:Name="ToDoListItemTextBox" VerticalContentAlignment="Center" BorderThickness="0"
+            <TextBox x:Name="ToDoListItemTextBox" Width="160" Margin="5,0" VerticalContentAlignment="Center" BorderThickness="0" 
                      IsReadOnly="True" IsReadOnlyCaretVisible="False"
-                     Text="{Binding Name}"
-                     MouseDoubleClick="ToDoListItemTextBox_MouseDoubleClick" 
-                     LostFocus="ToDoListItemTextBox_LostFocus">
+                     Text="{Binding Name}">
                 <i:Interaction.Triggers>
-                    <i:EventTrigger EventName="LostFocus">
-                        <i:InvokeCommandAction Command="{Binding DataContext.EditListNameCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
-                                               CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListBoxItem}}"/>
+                    <i:EventTrigger EventName="PreviewMouseLeftButtonUp">
+                        <i:InvokeCommandAction
+                            Command="{Binding DataContext.ChooseListCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
+                            CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListBoxItem}}" />
                     </i:EventTrigger>
                 </i:Interaction.Triggers>
             </TextBox>
-            <Button Command="{Binding DataContext.DeleteListCommand, RelativeSource={RelativeSource AncestorType=ListBox}}" 
-                    CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListBoxItem}}" 
-                    Content="X"/>
         </StackPanel>
     </DataTemplate>
     
-    <Style x:Key="ListBoxStyle">
-        <Setter Property="ListBox.ItemTemplate" Value="{StaticResource SidebarItemTemplate}"/>
-        <Setter Property="ListBox.BorderBrush" Value="{x:Null}"/>
-    </Style>
+    <DataTemplate x:Key="SidebarItemTemplate">
+        <StackPanel Height="30" Orientation="Horizontal">
+            <TextBox x:Name="ToDoListItemTextBox" Width="160" Margin="5,0" VerticalContentAlignment="Center" BorderThickness="0" 
+                     IsReadOnly="True" IsReadOnlyCaretVisible="False"
+                     Text="{Binding Name}"
+                     MouseDoubleClick="ToDoListItemTextBox_MouseDoubleClick"
+                     LostKeyboardFocus="ToDoListItemTextBox_LostKeyboardFocus">
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="LostKeyboardFocus">
+                        <i:InvokeCommandAction
+                            Command="{Binding DataContext.EditListNameCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
+                            CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListBoxItem}}" />
+                    </i:EventTrigger>
+                    <i:EventTrigger EventName="PreviewMouseLeftButtonUp">
+                        <i:InvokeCommandAction
+                            Command="{Binding DataContext.ChooseListCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
+                            CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListBoxItem}}" />
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+            </TextBox>
+            <Button
+                Command="{Binding DataContext.DeleteListCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
+                CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListBoxItem}}"
+                Content="X" Width="15"/>
+        </StackPanel>
+    </DataTemplate>
 
     <DataTemplate x:Key="TaskTemplate">
-        <StackPanel>
-            <StackPanel Orientation="Horizontal">
-                <CheckBox IsChecked="{Binding IsDone}"/>
-                <TextBlock Text="{Binding Name}"/>            
+        <Grid Margin="0,5" Background="Beige">
+            <Rectangle Fill="Beige">
+                <Rectangle.Effect>
+                    <DropShadowEffect BlurRadius="5" Opacity="0.6" ShadowDepth="10" Color="#5F2E59"/>
+                </Rectangle.Effect>
+            </Rectangle>
+            <StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="5,5,5,0">
+                <CheckBox IsChecked="{Binding IsDone}">
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="Checked">
+                            <i:InvokeCommandAction
+                                Command="{Binding DataContext.DoTaskCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
+                                CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListBoxItem}}" />
+                        </i:EventTrigger>
+                        <i:EventTrigger EventName="Unchecked">
+                            <i:InvokeCommandAction
+                                Command="{Binding DataContext.DoTaskCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
+                                CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListBoxItem}}" />
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </CheckBox>
+                <TextBlock Text="{Binding Name}" Margin="10,0">
+                    <TextBlock.Style>
+                        <Style>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding DataContext.IsExpired, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListBoxItem}}" Value="True">
+                                <Setter Property="TextBlock.Foreground" Value="Red"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding DataContext.IsDone, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListBoxItem}}" Value="True">
+                                <Setter Property="TextBlock.TextDecorations" Value="Strikethrough"/>
+                                <Setter Property="TextBlock.Foreground" Value="Gray"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
             </StackPanel>
-            <StackPanel Orientation="Horizontal" FlowDirection="RightToLeft">
-                <Button Command="{Binding DataContext.DeleteTaskCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
+            <StackPanel Orientation="Horizontal" FlowDirection="RightToLeft" Margin="5">
+                <Button
+                    Visibility="{Binding DataContext.IsNotTaskEditing, Converter={StaticResource VisibilityConverter}, RelativeSource={RelativeSource AncestorType=ListBox}}"
+                    Command="{Binding DataContext.DeleteTaskCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
+                    CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListBoxItem}}"
+                    Content="Удалить" Margin="5,0"/>
+                <Button x:Name="EditTaskButton"
+                        Visibility="{Binding DataContext.IsNotTaskEditing, Converter={StaticResource VisibilityConverter}, RelativeSource={RelativeSource AncestorType=ListBox}}"
+                        Command="{Binding DataContext.EditTaskCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
                         CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListBoxItem}}"
-                        Content="Удалить"/>
-                <Button x:Name="EditTaskButton" Command="{Binding DataContext.EditTaskCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
-                        CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListBoxItem}}"
-                        Content="Редактировать" 
-                        Click="EditTaskButton_Click"/>                
-                <TextBlock Text="{Binding Priority}"/>
-                <TextBlock Text="{Binding Repeating}"/>
-                <TextBlock Text="{Binding Time}"/>
+                        Content="Редактировать" Margin="5,0"/>
+                <TextBlock Text="{Binding TextPriority}" Margin="5,0"/>
+                <TextBlock Text="{Binding TextRepeating}" Margin="5,0"/>
+                <TextBlock Text="{Binding TextDateTime}" Margin="5,0"/>
             </StackPanel>
-        </StackPanel>
+            </StackPanel>
+        </Grid>
     </DataTemplate>
-    
+
 </ResourceDictionary>

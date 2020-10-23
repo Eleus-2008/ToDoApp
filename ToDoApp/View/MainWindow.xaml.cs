@@ -23,7 +23,6 @@ namespace ToDoApp
         public MainWindow()
         {
             InitializeComponent();
-
         }
     }
 }
