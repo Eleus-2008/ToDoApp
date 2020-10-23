@@ -32,6 +32,10 @@
         </Setter>
     </Style>
     
+    <Style x:Key="ListBoxStyle">
+        <Setter Property="ListBox.BorderBrush" Value="{x:Null}" />
+    </Style>
+    
     <DataTemplate x:Key="DefaultListsSidebarItemTemplate">
         <StackPanel Height="30" Orientation="Horizontal">
             <TextBox x:Name="ToDoListItemTextBox" Width="160" Margin="5,0" VerticalContentAlignment="Center" BorderThickness="0" 
@@ -76,8 +80,14 @@
     </DataTemplate>
 
     <DataTemplate x:Key="TaskTemplate">
-        <StackPanel Margin="0,5">
-            <StackPanel Orientation="Horizontal">
+        <Grid Margin="0,5" Background="Beige">
+            <Rectangle Fill="Beige">
+                <Rectangle.Effect>
+                    <DropShadowEffect BlurRadius="5" Opacity="0.6" ShadowDepth="10" Color="#5F2E59"/>
+                </Rectangle.Effect>
+            </Rectangle>
+            <StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="5,5,5,0">
                 <CheckBox IsChecked="{Binding IsDone}">
                     <i:Interaction.Triggers>
                         <i:EventTrigger EventName="Checked">
@@ -92,28 +102,39 @@
                         </i:EventTrigger>
                     </i:Interaction.Triggers>
                 </CheckBox>
-                <TextBlock Text="{Binding Name}" />
+                <TextBlock Text="{Binding Name}" Margin="10,0">
+                    <TextBlock.Style>
+                        <Style>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding DataContext.IsExpired, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListBoxItem}}" Value="True">
+                                <Setter Property="TextBlock.Foreground" Value="Red"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding DataContext.IsDone, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListBoxItem}}" Value="True">
+                                <Setter Property="TextBlock.TextDecorations" Value="Strikethrough"/>
+                                <Setter Property="TextBlock.Foreground" Value="Gray"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
             </StackPanel>
-            <StackPanel Orientation="Horizontal" FlowDirection="RightToLeft">
+            <StackPanel Orientation="Horizontal" FlowDirection="RightToLeft" Margin="5">
                 <Button
                     Visibility="{Binding DataContext.IsNotTaskEditing, Converter={StaticResource VisibilityConverter}, RelativeSource={RelativeSource AncestorType=ListBox}}"
                     Command="{Binding DataContext.DeleteTaskCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
                     CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListBoxItem}}"
-                    Content="Удалить" />
+                    Content="Удалить" Margin="5,0"/>
                 <Button x:Name="EditTaskButton"
                         Visibility="{Binding DataContext.IsNotTaskEditing, Converter={StaticResource VisibilityConverter}, RelativeSource={RelativeSource AncestorType=ListBox}}"
                         Command="{Binding DataContext.EditTaskCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
                         CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListBoxItem}}"
-                        Content="Редактировать" />
-                <TextBlock Text="{Binding TextPriority}" />
-                <TextBlock Text="{Binding TextRepeating}" />
-                <TextBlock Text="{Binding TextDateTime}" />
+                        Content="Редактировать" Margin="5,0"/>
+                <TextBlock Text="{Binding TextPriority}" Margin="5,0"/>
+                <TextBlock Text="{Binding TextRepeating}" Margin="5,0"/>
+                <TextBlock Text="{Binding TextDateTime}" Margin="5,0"/>
             </StackPanel>
-        </StackPanel>
+            </StackPanel>
+        </Grid>
     </DataTemplate>
-    
-    <Style x:Key="ListBoxStyle">
-        <Setter Property="ListBox.BorderBrush" Value="{x:Null}" />
-    </Style>
 
 </ResourceDictionary>

@@ -8,13 +8,13 @@
         Title="DateWindow" Height="240" Width="320">
     <Grid>
         <StackPanel>
-            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="15">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10">
                 <TextBlock Text="Дата:" />
                 <DatePicker SelectedDate="{Binding Date}"
                             DateValidationError="DatePicker_DateValidationError" />
             </StackPanel>
 
-            <StackPanel Orientation="Horizontal"  HorizontalAlignment="Center" VerticalAlignment="Center" Margin="15">
+            <StackPanel Orientation="Horizontal"  HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10">
                 <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,15,0">
                     <TextBlock Text="Время начала:" />
                     <TextBox Text="{Binding TimeOfBeginning}" />
@@ -25,16 +25,17 @@
                     <TextBox Text="{Binding TimeOfEnd}" />
                 </StackPanel>
             </StackPanel>
-
-            <StackPanel Margin="10">
+        
+        
+            <StackPanel Margin="5" Height="40">
                 <TextBlock Text="{Binding Errors}" />
             </StackPanel>
 
             <StackPanel Orientation="Horizontal"  HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10">
-                <Button x:Name="SaveButton" Content="Сохранить" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10"
+                <Button x:Name="SaveButton" Content="Сохранить" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10,0"
                         Command="{Binding SaveDateCommand}" Click="SaveButton_Click" />
 
-                <Button x:Name="ExitButton" Content="Отмена" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10"
+                <Button x:Name="ExitButton" Content="Отмена" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10,0"
                         Click="ExitButton_Click" />
             </StackPanel>
         </StackPanel>

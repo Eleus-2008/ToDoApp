@@ -85,11 +85,11 @@ namespace ToDoApp.ViewModel
                 var text = string.Empty;
                 if (Date.HasValue)
                 {
-                    text = Date.Value.ToString("ddd, d MMM");
+                    text = Date.Value.ToString("ddd, d MMM ");
                     
                     if (DateTime.Today.Year != Date.Value.Year)
                     {
-                        text += Date.Value.ToString(" yyyy");
+                        text += Date.Value.ToString("yyyy ");
                     }
 
                     if (TimeOfBeginning.HasValue)

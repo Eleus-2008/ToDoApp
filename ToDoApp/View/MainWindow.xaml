@@ -14,7 +14,7 @@
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
-            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
         <Grid>
@@ -23,7 +23,7 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
             <StackPanel>
-            <ListBox ItemsSource="{Binding DefaultToDoLists}" Margin="0,20,0,0" Style="{StaticResource ListBoxStyle}" ItemTemplate="{StaticResource DefaultListsSidebarItemTemplate}"/>
+            <ListBox ItemsSource="{Binding DefaultToDoLists}" Style="{StaticResource ListBoxStyle}" ItemTemplate="{StaticResource DefaultListsSidebarItemTemplate}"/>
             <Separator Margin="5,10" />
             <StackPanel Orientation="Horizontal" Height="30">
                 <TextBox x:Name="AddListTextBox" Style="{StaticResource MyWaterMarkStyle}" Tag="Добавить список..." Width="160" Margin="10,0,7,0" VerticalContentAlignment="Center"/>
@@ -34,15 +34,20 @@
             <ListBox Grid.Row="1" x:Name="ToDoListsBox" HorizontalContentAlignment="Stretch" ItemsSource="{Binding ToDoLists}" Style="{StaticResource ListBoxStyle}"  ItemTemplate="{StaticResource SidebarItemTemplate}"/>
         </Grid>
 
-        <Grid Grid.Column="1" Margin="20">
+        <Grid Grid.Column="1" Background="Plum">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
-            <StackPanel>
+            <Rectangle Fill="Beige" Margin="5,5,5,0">
+                <Rectangle.Effect>
+                    <DropShadowEffect BlurRadius="5" Opacity="0.6" ShadowDepth="10" Color="#5F2E59"/>
+                </Rectangle.Effect>
+            </Rectangle>
+            <StackPanel Grid.Row="0" Background="Beige" Margin="5,5,5,0">
                 <TextBox IsReadOnly="False" Text="{Binding CurrentTask.Name}" Style="{StaticResource MyWaterMarkStyle}" Tag="Добавить задачу..." VerticalContentAlignment="Center"
-                         BorderThickness="0" Margin="0,5"/>
-                <StackPanel FlowDirection="RightToLeft" Orientation="Horizontal">
+                         BorderThickness="0" Margin="5"/>
+                <StackPanel FlowDirection="RightToLeft" Orientation="Horizontal" Margin="5">
                     <Button x:Name="SaveTaskButton" Content="Сохранить" Margin="5,0" Visibility="{Binding IsTaskEditing, Converter={StaticResource VisibilityConverter}}" 
                             Command="{Binding SaveTaskCommand}"/>
                     <Button Content="Добавить" Margin="5,0" Command="{Binding AddTaskCommand}" 
@@ -66,7 +71,10 @@
                     <Button Margin="5,0" Content="Время" Command="{Binding EditTimeCommand}" />
                 </StackPanel>
             </StackPanel>
-            <ListBox Grid.Row="1" Margin="0,10" ItemsSource="{Binding CurrentTasksList}" ItemTemplate="{StaticResource TaskTemplate}" BorderThickness="0"/>
+            <ListBox Grid.Row="1" Margin="0,10" HorizontalContentAlignment="Stretch"
+                     ItemsSource="{Binding CurrentTasksList}"
+                     ItemTemplate="{StaticResource TaskTemplate}" Style="{StaticResource ListBoxStyle}"
+                     Background="Transparent"/>
         </Grid>
 
     </Grid>
