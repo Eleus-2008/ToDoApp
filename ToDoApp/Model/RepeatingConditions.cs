@@ -63,7 +63,7 @@ namespace ToDoApp.Model
                     for (var i = (int) latestPlannedDate.DayOfWeek + 1; i < j; i++)
                     {
                         var dayOfWeekNumber = i;
-                        if (dayOfWeekNumber == 7)
+                        if (dayOfWeekNumber >= 7)
                         {
                             dayOfWeekNumber -= 7;
                         }
