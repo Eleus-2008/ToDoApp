@@ -269,6 +269,8 @@ namespace ToDoApp.ViewModel
             task.DateUpdated += (sender, args) =>
             {
                 OnPropertyChanged("TextDateTime");
+                OnPropertyChanged("IsActual");
+                OnPropertyChanged("IsExpired");
             };
         }
 
