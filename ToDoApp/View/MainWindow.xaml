@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:ToDoApp"
         xmlns:viewmodel="clr-namespace:ToDoApp.ViewModel"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow" Height="540" Width="960">
     <Window.DataContext>
         <viewmodel:ToDoAppViewModel x:Name="ToDoAppViewModel" />
     </Window.DataContext>
@@ -71,8 +71,9 @@
                     <Button Margin="5,0" Content="Время" Command="{Binding EditTimeCommand}" />
                 </StackPanel>
             </StackPanel>
-            <ListBox Grid.Row="1" Margin="0,10" HorizontalContentAlignment="Stretch"
-                     ItemsSource="{Binding CurrentTasksList}"
+            <ListBox x:Name="TasksListBox"
+                     Grid.Row="1" Margin="0,10" HorizontalContentAlignment="Stretch"
+                     ItemsSource="{Binding TasksView}"
                      ItemTemplate="{StaticResource TaskTemplate}" Style="{StaticResource ListBoxStyle}"
                      Background="Transparent"/>
         </Grid>

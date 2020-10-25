@@ -6,6 +6,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using ToDoApp.Model;
 using ToDoApp.Model.Enums;
 
@@ -21,18 +22,30 @@ namespace ToDoApp.ViewModel
         public ObservableCollection<ToDoListViewModel> ToDoLists { get; set; } =
             new ObservableCollection<ToDoListViewModel>();
 
-        private BindingList<TaskViewModel> _currentTasksList;
+        private ObservableCollection<TaskViewModel> _currentTasksList;
 
-        public BindingList<TaskViewModel> CurrentTasksList
+        public ObservableCollection<TaskViewModel> CurrentTasksList
         {
             get => _currentTasksList;
             set
             {
                 _currentTasksList = value;
+                TasksView = new ListCollectionView(CurrentTasksList) {CustomSort = new TasksSorter()};
                 OnPropertyChanged();
             }
         }
 
+        private ListCollectionView _tasksView;
+        public ListCollectionView TasksView
+        {
+            get => _tasksView;
+            set
+            {
+                _tasksView = value;
+                OnPropertyChanged();
+            }
+        }
+        
         private TaskViewModel _currentTask;
 
         public TaskViewModel CurrentTask
@@ -72,7 +85,7 @@ namespace ToDoApp.ViewModel
                     }).ToList();
                 }
                 _currentList = value;
-                CurrentTasksList = new BindingList<TaskViewModel>(_currentList.Tasks.ToList());
+                CurrentTasksList = new ObservableCollection<TaskViewModel>(_currentList.Tasks.ToList());
                 OnPropertyChanged();
             }
         }
@@ -207,10 +220,11 @@ namespace ToDoApp.ViewModel
         {
             CurrentTask = new TaskViewModel(new Task());
             CurrentList = new ToDoListViewModel(new ToDoList());
-            CurrentTasksList = new BindingList<TaskViewModel>();
+            CurrentTasksList = new ObservableCollection<TaskViewModel>();
             OnPropertyChanged("IsRepeatComboboxEnabled");
 
             InitializeToDoLists();
+            TasksView = new ListCollectionView(CurrentTasksList) {CustomSort = new TasksSorter()};
         }
 
         private void InitializeToDoLists()
@@ -347,9 +361,11 @@ namespace ToDoApp.ViewModel
                                }
 
                                _unitOfWork.Tasks.Add(CurrentTask.Task);
-                               CurrentTasksList.Insert(0, CurrentTask);
+                               CurrentTasksList.Add(CurrentTask);
 
                                CurrentTask = new TaskViewModel(new Task());
+                               
+                               TasksView.Refresh();
                            }
                        ));
             }
@@ -384,6 +400,8 @@ namespace ToDoApp.ViewModel
                            var chosenItem = obj as ListBoxItem;
                            var chosenTask = chosenItem.Content as TaskViewModel;
                            _unitOfWork.Tasks.Update(chosenTask.Task);
+                           
+                           TasksView.Refresh();
                        }));
             }
         }
@@ -400,6 +418,8 @@ namespace ToDoApp.ViewModel
                            _unitOfWork.Tasks.Update(CurrentTask.Task);
                            IsTaskEditing = false;
                            CurrentTask = new TaskViewModel(new Task());
+                           
+                           TasksView.Refresh();
                        }, obj => IsTaskEditing));
             }
         }
