@@ -9,6 +9,17 @@ namespace ToDoApp.ViewModel
         {
             var x = xObj as TaskViewModel;
             var y = yObj as TaskViewModel;
+
+            if (x.IsDone && !y.IsDone)
+            {
+                return 1;
+            }
+
+            if (!x.IsDone && y.IsDone)
+            {
+                return -1;
+            }
+            
             if (!x.IsActual && y.IsActual)
             {
                 return 1;

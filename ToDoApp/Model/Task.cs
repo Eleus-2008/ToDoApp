@@ -76,6 +76,11 @@ namespace ToDoApp.Model
         {
             get
             {
+                if (IsDone)
+                {
+                    return false;
+                }
+                
                 if (Date == null)
                 {
                     return true;
