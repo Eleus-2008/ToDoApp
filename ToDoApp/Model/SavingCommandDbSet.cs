@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using ToDoApp.Model.Enums;
 using ToDoApp.Model.Interfaces;
@@ -20,30 +21,30 @@ namespace ToDoApp.Model
             _repository.Load();
         }
 
-        public List<T> GetAll()
+        public async Task<List<T>> GetAllAsync()
         {
-            return _repository.ToList();
+            return await _repository.ToListAsync();
         }
 
-        public void Add(T item)
+        public async System.Threading.Tasks.Task AddAsync(T item)
         {
-            _repository.Add(item);
+            await System.Threading.Tasks.Task.Run(() => _repository.Add(item));
             _commandSaver.AddCommand(HttpRequestType.Put, item);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
 
-        public void Update(T item)
+        public async System.Threading.Tasks.Task UpdateAsync(T item)
         {
-            _repository.Update(item);
+            await System.Threading.Tasks.Task.Run(() => _repository.Update(item));
             _commandSaver.AddCommand(HttpRequestType.Post, item);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
 
-        public void Remove(T item)
+        public async System.Threading.Tasks.Task RemoveAsync(T item)
         {
-            _repository.Remove(item);
+            await System.Threading.Tasks.Task.Run(() => _repository.Remove(item));
             _commandSaver.AddCommand(HttpRequestType.Delete, item);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
     }
 }
