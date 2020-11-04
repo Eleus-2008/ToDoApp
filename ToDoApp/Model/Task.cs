@@ -1,8 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices.ComTypes;
-using ToDoApp.Model.Enums;
 using ToDoApp.Model.Interfaces;
 
 namespace ToDoApp.Model

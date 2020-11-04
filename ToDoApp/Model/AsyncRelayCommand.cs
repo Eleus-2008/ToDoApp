@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading;
 using System.Windows.Input;
 using ToDoApp.Model.Extensions;
 using ToDoApp.Model.Interfaces;
