@@ -27,11 +27,13 @@
             <Separator Margin="5,10" />
             <StackPanel Orientation="Horizontal" Height="30">
                 <TextBox x:Name="AddListTextBox" Style="{StaticResource MyWaterMarkStyle}" Tag="Добавить список..." Width="160" Margin="10,0,7,0" VerticalContentAlignment="Center"/>
-                <Button Content="+" Width="15" Command="{Binding AddListCommand}"
-                        CommandParameter="{Binding ElementName=AddListTextBox}" />
+                <Button Content="+" Width="15" Margin="0,0,7,0"
+                        Command="{Binding AddListCommand}" CommandParameter="{Binding ElementName=AddListTextBox}" />
             </StackPanel>
             </StackPanel>
-            <ListBox Grid.Row="1" x:Name="ToDoListsBox" HorizontalContentAlignment="Stretch" ItemsSource="{Binding ToDoLists}" Style="{StaticResource ListBoxStyle}"  ItemTemplate="{StaticResource SidebarItemTemplate}"/>
+            <ListBox Grid.Row="1" x:Name="ToDoListsBox" HorizontalContentAlignment="Stretch" 
+                     ItemsSource="{Binding ToDoLists}" ItemTemplate="{StaticResource SidebarItemTemplate}"
+                     Style="{StaticResource ListBoxStyle}"/>
         </Grid>
 
         <Grid Grid.Column="1" Background="Plum">
