@@ -142,7 +142,7 @@ namespace ToDoApp.ViewModel
                 };
                 if (RepeatingConditions.Type == TypeOfRepeatTimeSpan.DayOfWeek &&
                     RepeatingConditions.RepeatInterval == 1 &&
-                    !RepeatingConditions.RepeatingDaysOfWeek.Except(workdays).Any())
+                    RepeatingConditions.RepeatingDaysOfWeek.SequenceEqual(workdays))
                 {
                     return "Рабочие дни";
                 }
@@ -154,7 +154,7 @@ namespace ToDoApp.ViewModel
                 };
                 if (RepeatingConditions.Type == TypeOfRepeatTimeSpan.DayOfWeek &&
                     RepeatingConditions.RepeatInterval == 1 &&
-                    !RepeatingConditions.RepeatingDaysOfWeek.Except(weekends).Any())
+                    RepeatingConditions.RepeatingDaysOfWeek.SequenceEqual(weekends))
                 {
                     return "Выходные";
                 }

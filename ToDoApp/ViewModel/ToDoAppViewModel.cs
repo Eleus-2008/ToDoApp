@@ -391,8 +391,9 @@ namespace ToDoApp.ViewModel
                                    CurrentTask.Task.ToDoList = CurrentList.ToDoList;
                                }
 
-                               await _unitOfWork.Tasks.AddAsync(CurrentTask.Task);
                                CurrentTasksList.Add(CurrentTask);
+                               
+                               await _unitOfWork.Tasks.AddAsync(CurrentTask.Task);
 
                                CurrentTask = new TaskViewModel(new Task());
 
@@ -451,7 +452,7 @@ namespace ToDoApp.ViewModel
                            CurrentTask = new TaskViewModel(new Task());
 
                            TasksView.Refresh();
-                       }, obj => IsTaskEditing));
+                       }));
             }
         }
 
