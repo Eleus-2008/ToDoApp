@@ -3,7 +3,6 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:ToDoApp"
         mc:Ignorable="d"
         Title="RepeatDateWindow" Height="240" Width="320">
     <Window.Resources>
@@ -27,13 +26,13 @@
 
             <WrapPanel Margin="15"
                        Visibility="{Binding IsDaysOfWeekVisible, Converter={StaticResource VisibilityConverter}}">
-                <ToggleButton Content="Пн" IsChecked="{Binding IsMondayChoosen}" />
-                <ToggleButton Content="Вт" IsChecked="{Binding IsTuesdayChoosen}" />
-                <ToggleButton Content="Ср" IsChecked="{Binding IsWednesdayChoosen}" />
-                <ToggleButton Content="Чт" IsChecked="{Binding IsThursdayChoosen}" />
-                <ToggleButton Content="Пт" IsChecked="{Binding IsFridayChoosen}" />
-                <ToggleButton Content="Сб" IsChecked="{Binding IsSaturdayChoosen}" />
-                <ToggleButton Content="Вс" IsChecked="{Binding IsSundayChoosen}" />
+                <ToggleButton Content="Пн" IsChecked="{Binding IsMondaySelected}" />
+                <ToggleButton Content="Вт" IsChecked="{Binding IsTuesdaySelected}" />
+                <ToggleButton Content="Ср" IsChecked="{Binding IsWednesdaySelected}" />
+                <ToggleButton Content="Чт" IsChecked="{Binding IsThursdaySelected}" />
+                <ToggleButton Content="Пт" IsChecked="{Binding IsFridaySelected}" />
+                <ToggleButton Content="Сб" IsChecked="{Binding IsSaturdaySelected}" />
+                <ToggleButton Content="Вс" IsChecked="{Binding IsSundaySelected}" />
             </WrapPanel>
             
             <StackPanel Margin="15" Orientation="Horizontal" HorizontalAlignment="Center">

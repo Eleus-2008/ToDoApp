@@ -48,7 +48,7 @@ namespace ToDoApp.ViewModel
 
         #region DaysOfWeekProps
 
-        public bool IsMondayChoosen
+        public bool IsMondaySelected
         {
             get => _repeatingDaysOfWeek.Contains(DayOfWeek.Monday);
             set
@@ -64,7 +64,7 @@ namespace ToDoApp.ViewModel
             }
         }
 
-        public bool IsTuesdayChoosen
+        public bool IsTuesdaySelected
         {
             get => _repeatingDaysOfWeek.Contains(DayOfWeek.Tuesday);
             set
@@ -80,7 +80,7 @@ namespace ToDoApp.ViewModel
             }
         }
 
-        public bool IsWednesdayChoosen
+        public bool IsWednesdaySelected
         {
             get => _repeatingDaysOfWeek.Contains(DayOfWeek.Wednesday);
             set
@@ -96,7 +96,7 @@ namespace ToDoApp.ViewModel
             }
         }
 
-        public bool IsThursdayChoosen
+        public bool IsThursdaySelected
         {
             get => _repeatingDaysOfWeek.Contains(DayOfWeek.Thursday);
             set
@@ -112,7 +112,7 @@ namespace ToDoApp.ViewModel
             }
         }
 
-        public bool IsFridayChoosen
+        public bool IsFridaySelected
         {
             get => _repeatingDaysOfWeek.Contains(DayOfWeek.Friday);
             set
@@ -128,7 +128,7 @@ namespace ToDoApp.ViewModel
             }
         }
 
-        public bool IsSaturdayChoosen
+        public bool IsSaturdaySelected
         {
             get => _repeatingDaysOfWeek.Contains(DayOfWeek.Saturday);
             set
@@ -144,7 +144,7 @@ namespace ToDoApp.ViewModel
             }
         }
 
-        public bool IsSundayChoosen
+        public bool IsSundaySelected
         {
             get => _repeatingDaysOfWeek.Contains(DayOfWeek.Sunday);
             set
@@ -227,13 +227,13 @@ namespace ToDoApp.ViewModel
 
         private void UpdateDaysOfWeekProperties()
         {
-            OnPropertyChanged("IsMondayChoosen");
-            OnPropertyChanged("IsTuesdayChoosen");
-            OnPropertyChanged("IsWednesdayChoosen");
-            OnPropertyChanged("IsThursdayChoosen");
-            OnPropertyChanged("IsFridayChoosen");
-            OnPropertyChanged("IsSaturdayChoosen");
-            OnPropertyChanged("IsSundayChoosen");
+            OnPropertyChanged("IsMondaySelected");
+            OnPropertyChanged("IsTuesdaySelected");
+            OnPropertyChanged("IsWednesdaySelected");
+            OnPropertyChanged("IsThursdaySelected");
+            OnPropertyChanged("IsFridaySelected");
+            OnPropertyChanged("IsSaturdaySelected");
+            OnPropertyChanged("IsSundaySelected");
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
