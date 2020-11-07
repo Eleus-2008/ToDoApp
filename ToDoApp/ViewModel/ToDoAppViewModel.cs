@@ -4,8 +4,8 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using ToDoApp.Model;
 using ToDoApp.Model.Enums;
 
@@ -15,20 +15,35 @@ namespace ToDoApp.ViewModel
     {
         private readonly UnitOfWork _unitOfWork = new UnitOfWork();
 
+        private ToDoListViewModel _unlistedTasksList;
+
         public ObservableCollection<ToDoListViewModel> DefaultToDoLists { get; set; } =
             new ObservableCollection<ToDoListViewModel>();
 
         public ObservableCollection<ToDoListViewModel> ToDoLists { get; set; } =
             new ObservableCollection<ToDoListViewModel>();
 
-        private BindingList<TaskViewModel> _currentTasksList;
+        private ObservableCollection<TaskViewModel> _currentTasksList;
 
-        public BindingList<TaskViewModel> CurrentTasksList
+        public ObservableCollection<TaskViewModel> CurrentTasksList
         {
             get => _currentTasksList;
             set
             {
                 _currentTasksList = value;
+                TasksView = new ListCollectionView(CurrentTasksList) {CustomSort = new TasksSorter()};
+                OnPropertyChanged();
+            }
+        }
+
+        private ListCollectionView _tasksView;
+
+        public ListCollectionView TasksView
+        {
+            get => _tasksView;
+            set
+            {
+                _tasksView = value;
                 OnPropertyChanged();
             }
         }
@@ -57,22 +72,26 @@ namespace ToDoApp.ViewModel
             {
                 if (value.Name == "Задачи")
                 {
-                    value.ToDoList.Tasks = _unitOfWork.ToDoLists.GetAll().SelectMany(x => x.Tasks).ToList();
+                    value.ToDoList.Tasks =
+                        ToDoLists.SelectMany(list => list.Tasks.Select(task => task.Task)).Union(_unlistedTasksList.ToDoList.Tasks).ToList();
                 }
+
                 if (value.Name == "Мой день")
                 {
-                    value.ToDoList.Tasks = _unitOfWork.ToDoLists.GetAll().SelectMany(x => x.Tasks).Where(task =>
-                    {
-                        if (!task.Date.HasValue)
+                    value.ToDoList.Tasks = ToDoLists.SelectMany(list => list.Tasks.Select(task => task.Task)).Union(_unlistedTasksList.ToDoList.Tasks)
+                        .Where(task =>
                         {
-                            return true;
-                        }
+                            if (!task.Date.HasValue)
+                            {
+                                return true;
+                            }
 
-                        return task.Date == DateTime.Today;
-                    }).ToList();
+                            return task.Date == DateTime.Today;
+                        }).ToList();
                 }
+
                 _currentList = value;
-                CurrentTasksList = new BindingList<TaskViewModel>(_currentList.Tasks.ToList());
+                CurrentTasksList = new ObservableCollection<TaskViewModel>(_currentList.Tasks.ToList());
                 OnPropertyChanged();
             }
         }
@@ -123,7 +142,8 @@ namespace ToDoApp.ViewModel
                             RepeatInterval = 1
                         };
                         break;
-                    case 2: CurrentTask.RepeatingConditions = new RepeatingConditions
+                    case 2:
+                        CurrentTask.RepeatingConditions = new RepeatingConditions
                         {
                             Type = TypeOfRepeatTimeSpan.DayOfWeek,
                             RepeatInterval = 1,
@@ -137,7 +157,8 @@ namespace ToDoApp.ViewModel
                             }
                         };
                         break;
-                    case 3: CurrentTask.RepeatingConditions = new RepeatingConditions
+                    case 3:
+                        CurrentTask.RepeatingConditions = new RepeatingConditions
                         {
                             Type = TypeOfRepeatTimeSpan.DayOfWeek,
                             RepeatInterval = 1,
@@ -148,7 +169,8 @@ namespace ToDoApp.ViewModel
                             }
                         };
                         break;
-                    case 4: CurrentTask.RepeatingConditions = new RepeatingConditions
+                    case 4:
+                        CurrentTask.RepeatingConditions = new RepeatingConditions
                         {
                             Type = TypeOfRepeatTimeSpan.DayOfWeek,
                             RepeatInterval = 1,
@@ -158,13 +180,15 @@ namespace ToDoApp.ViewModel
                             }
                         };
                         break;
-                    case 5: CurrentTask.RepeatingConditions = new RepeatingConditions
+                    case 5:
+                        CurrentTask.RepeatingConditions = new RepeatingConditions
                         {
                             Type = TypeOfRepeatTimeSpan.Month,
                             RepeatInterval = 1
                         };
                         break;
-                    case 6: CurrentTask.RepeatingConditions = new RepeatingConditions
+                    case 6:
+                        CurrentTask.RepeatingConditions = new RepeatingConditions
                         {
                             Type = TypeOfRepeatTimeSpan.Year,
                             RepeatInterval = 1
@@ -192,13 +216,17 @@ namespace ToDoApp.ViewModel
             {
                 switch (value)
                 {
-                    case 0: CurrentTask.Priority = 2;
+                    case 0:
+                        CurrentTask.Priority = 2;
                         break;
-                    case 1: CurrentTask.Priority = 5;
+                    case 1:
+                        CurrentTask.Priority = 5;
                         break;
-                    case 2: CurrentTask.Priority = 8;
+                    case 2:
+                        CurrentTask.Priority = 8;
                         break;
                 }
+
                 OnPropertyChanged();
             }
         }
@@ -207,36 +235,45 @@ namespace ToDoApp.ViewModel
         {
             CurrentTask = new TaskViewModel(new Task());
             CurrentList = new ToDoListViewModel(new ToDoList());
-            CurrentTasksList = new BindingList<TaskViewModel>();
-            OnPropertyChanged("IsRepeatComboboxEnabled");
+            CurrentTasksList = new ObservableCollection<TaskViewModel>();
 
-            InitializeToDoLists();
+            InitializeToDoLists().ContinueWith(task =>
+            {
+                TasksView = new ListCollectionView(CurrentTasksList) {CustomSort = new TasksSorter()};
+            });
         }
 
-        private void InitializeToDoLists()
+        private async System.Threading.Tasks.Task InitializeToDoLists()
         {
-            ToDoLists = new ObservableCollection<ToDoListViewModel>(_unitOfWork.ToDoLists.GetAll()
-                .SkipWhile(list => list.Name == "Все задачи")
+            var toDoLists = await _unitOfWork.ToDoLists.GetAllAsync();
+            ToDoLists = new ObservableCollection<ToDoListViewModel>(toDoLists
+                .SkipWhile(list => list.Name == "Задачи без списка")
                 .Select(list => new ToDoListViewModel(list)));
 
-            if (_unitOfWork.ToDoLists.GetAll().All(list => list.Name != "Все задачи"))
+            if (toDoLists.FirstOrDefault(list => list.Name == "Задачи без списка") == null)
             {
-                _unitOfWork.ToDoLists.Add(new ToDoList
+                var unlistedTasksList = new ToDoList
                 {
-                    Name = "Все задачи"
-                });
+                    Name = "Задачи без списка"
+                };
+                _unlistedTasksList = new ToDoListViewModel(unlistedTasksList);
+                await _unitOfWork.ToDoLists.AddAsync(unlistedTasksList);
+            }
+            else
+            {
+                _unlistedTasksList = new ToDoListViewModel(toDoLists.FirstOrDefault(list => list.Name == "Задачи без списка"));
             }
 
             DefaultToDoLists.Add(new ToDoListViewModel(new ToDoList
             {
                 Name = "Задачи",
-                Tasks = _unitOfWork.ToDoLists.GetAll().SelectMany(x => x.Tasks).ToList()
+                Tasks = toDoLists.SelectMany(x => x.Tasks).Union(_unlistedTasksList.ToDoList.Tasks).ToList()
             }));
 
             DefaultToDoLists.Add(new ToDoListViewModel(new ToDoList
             {
                 Name = "Мой день",
-                Tasks = _unitOfWork.ToDoLists.GetAll().SelectMany(x => x.Tasks).Where(task =>
+                Tasks = toDoLists.SelectMany(x => x.Tasks).Union(_unlistedTasksList.ToDoList.Tasks).Where(task =>
                 {
                     if (!task.Date.HasValue)
                     {
@@ -250,24 +287,26 @@ namespace ToDoApp.ViewModel
             CurrentList = DefaultToDoLists[0];
         }
 
-        private RelayCommand _addListCommand;
+        private AsyncRelayCommand<object> _addListCommand;
 
-        public RelayCommand AddListCommand
+        public AsyncRelayCommand<object> AddListCommand
         {
             get
             {
                 return _addListCommand ??
-                       (_addListCommand = new RelayCommand(obj =>
+                       (_addListCommand = new AsyncRelayCommand<object>(async obj =>
                        {
                            var textBox = obj as TextBox;
                            var newList = new ToDoList
                            {
                                Name = textBox.Text
                            };
-                           _unitOfWork.ToDoLists.Add(newList);
+
                            ToDoLists.Add(new ToDoListViewModel(newList));
                            CurrentList = ToDoLists.Last();
                            textBox.Text = string.Empty;
+
+                           await _unitOfWork.ToDoLists.AddAsync(newList);
                        }));
             }
         }
@@ -288,68 +327,77 @@ namespace ToDoApp.ViewModel
             }
         }
 
-        private RelayCommand _editListNameCommand;
+        private AsyncRelayCommand<object> _editListNameCommand;
 
-        public RelayCommand EditListNameCommand
+        public AsyncRelayCommand<object> EditListNameCommand
         {
             get
             {
                 return _editListNameCommand ??
-                       (_editListNameCommand = new RelayCommand(obj =>
+                       (_editListNameCommand = new AsyncRelayCommand<object>(async obj =>
                        {
                            var chosenItem = obj as ListBoxItem;
                            var chosenToDoList = chosenItem.Content as ToDoListViewModel;
-                           _unitOfWork.ToDoLists.Update(chosenToDoList.ToDoList);
+
+                           await _unitOfWork.ToDoLists.UpdateAsync(chosenToDoList.ToDoList);
                        }));
             }
         }
 
-        private RelayCommand _deleteListCommand;
+        private AsyncRelayCommand<object> _deleteListCommand;
 
-        public RelayCommand DeleteListCommand
+        public AsyncRelayCommand<object> DeleteListCommand
         {
             get
             {
                 return _deleteListCommand ??
-                       (_deleteListCommand = new RelayCommand(obj =>
+                       (_deleteListCommand = new AsyncRelayCommand<object>(async obj =>
                        {
                            var chosenItem = obj as ListBoxItem;
                            var chosenToDoList = chosenItem.Content as ToDoListViewModel;
-                           foreach (var taskViewModel in chosenToDoList.Tasks)
-                           {
-                               _unitOfWork.Tasks.Remove(taskViewModel.Task);
-                           }        
-                           _unitOfWork.ToDoLists.Remove(chosenToDoList.ToDoList);
+
                            ToDoLists.Remove(chosenToDoList);
                            CurrentList = DefaultToDoLists[0];
+                           CurrentTasksList = new ObservableCollection<TaskViewModel>(
+                               CurrentTasksList.Where(x => x.Task.ToDoList != chosenToDoList.ToDoList));
+
+                           foreach (var taskViewModel in chosenToDoList.Tasks)
+                           {
+                               await _unitOfWork.Tasks.RemoveAsync(taskViewModel.Task);
+                           }
+
+                           await _unitOfWork.ToDoLists.RemoveAsync(chosenToDoList.ToDoList);
                        }));
             }
         }
 
-        private RelayCommand _addTaskCommand;
+        private AsyncRelayCommand<object> _addTaskCommand;
 
-        public RelayCommand AddTaskCommand
+        public AsyncRelayCommand<object> AddTaskCommand
         {
             get
             {
                 return _addTaskCommand ??
-                       (_addTaskCommand = new RelayCommand(obj =>
+                       (_addTaskCommand = new AsyncRelayCommand<object>(async obj =>
                            {
                                if (CurrentList == DefaultToDoLists.First(list => list.Name == "Задачи") ||
                                    CurrentList == DefaultToDoLists.First(list => list.Name == "Мой день"))
                                {
-                                   CurrentTask.Task.ToDoList = _unitOfWork.ToDoLists.GetAll()
-                                       .First(list => list.Name == "Все задачи");
+                                   CurrentTask.Task.ToDoList = _unitOfWork.ToDoLists.GetAllAsync().Result
+                                       .First(list => list.Name == "Задачи без списка");
                                }
                                else
                                {
                                    CurrentTask.Task.ToDoList = CurrentList.ToDoList;
                                }
 
-                               _unitOfWork.Tasks.Add(CurrentTask.Task);
-                               CurrentTasksList.Insert(0, CurrentTask);
+                               CurrentTasksList.Add(CurrentTask);
+                               
+                               await _unitOfWork.Tasks.AddAsync(CurrentTask.Task);
 
                                CurrentTask = new TaskViewModel(new Task());
+
+                               TasksView.Refresh();
                            }
                        ));
             }
@@ -372,50 +420,54 @@ namespace ToDoApp.ViewModel
             }
         }
 
-        private RelayCommand _doTaskCommand;
+        private AsyncRelayCommand<object> _doTaskCommand;
 
-        public RelayCommand DoTaskCommand
+        public AsyncRelayCommand<object> DoTaskCommand
         {
             get
             {
                 return _doTaskCommand ??
-                       (_doTaskCommand = new RelayCommand(obj =>
+                       (_doTaskCommand = new AsyncRelayCommand<object>(async obj =>
                        {
                            var chosenItem = obj as ListBoxItem;
                            var chosenTask = chosenItem.Content as TaskViewModel;
-                           _unitOfWork.Tasks.Update(chosenTask.Task);
+                           await _unitOfWork.Tasks.UpdateAsync(chosenTask.Task);
+
+                           TasksView.Refresh();
                        }));
             }
         }
-        
-        private RelayCommand _saveTaskCommand;
 
-        public RelayCommand SaveTaskCommand
+        private AsyncRelayCommand<object> _saveTaskCommand;
+
+        public AsyncRelayCommand<object> SaveTaskCommand
         {
             get
             {
                 return _saveTaskCommand ??
-                       (_saveTaskCommand = new RelayCommand(obj =>
+                       (_saveTaskCommand = new AsyncRelayCommand<object>(async obj =>
                        {
-                           _unitOfWork.Tasks.Update(CurrentTask.Task);
+                           await _unitOfWork.Tasks.UpdateAsync(CurrentTask.Task);
                            IsTaskEditing = false;
                            CurrentTask = new TaskViewModel(new Task());
-                       }, obj => IsTaskEditing));
+
+                           TasksView.Refresh();
+                       }));
             }
         }
 
-        private RelayCommand _deleteTaskCommand;
+        private AsyncRelayCommand<object> _deleteTaskCommand;
 
-        public RelayCommand DeleteTaskCommand
+        public AsyncRelayCommand<object> DeleteTaskCommand
         {
             get
             {
                 return _deleteTaskCommand ??
-                       (_deleteTaskCommand = new RelayCommand(obj =>
+                       (_deleteTaskCommand = new AsyncRelayCommand<object>(async obj =>
                        {
                            var chosenItem = obj as ListBoxItem;
                            var chosenTask = chosenItem.Content as TaskViewModel;
-                           _unitOfWork.Tasks.Remove(chosenTask.Task);
+                           await _unitOfWork.Tasks.RemoveAsync(chosenTask.Task);
                            CurrentTasksList.Remove(chosenTask);
                        }));
             }

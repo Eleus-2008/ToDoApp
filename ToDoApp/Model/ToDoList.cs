@@ -1,6 +1,4 @@
-using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel;
 using ToDoApp.Model.Interfaces;
 
 namespace ToDoApp.Model

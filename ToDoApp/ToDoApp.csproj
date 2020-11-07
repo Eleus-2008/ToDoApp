@@ -174,8 +174,12 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Model\ApplicationContext.cs" />
+    <Compile Include="Model\AsyncRelayCommand.cs" />
     <Compile Include="Model\CommandSaver.cs" />
     <Compile Include="Model\Enums\HttpRequestType.cs" />
+    <Compile Include="Model\Extensions\TaskUtilities.cs" />
+    <Compile Include="Model\Interfaces\IAsyncCommand.cs" />
+    <Compile Include="Model\Interfaces\IErrorHandler.cs" />
     <Compile Include="Model\SavingCommandDbSet.cs" />
     <Compile Include="Model\Enums\TypeOfRepeatTimeSpan.cs" />
     <Compile Include="Model\Interfaces\IEntity.cs" />
@@ -185,6 +189,7 @@
     <Compile Include="Model\UnitOfWork.cs" />
     <Compile Include="ViewModel\DateViewModel.cs" />
     <Compile Include="ViewModel\RepeatDateViewModel.cs" />
+    <Compile Include="ViewModel\TasksSorter.cs" />
     <Compile Include="View\AppDictionary.xaml.cs">
       <DependentUpon>AppDictionary.xaml</DependentUpon>
     </Compile>

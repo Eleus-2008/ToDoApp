@@ -9,7 +9,7 @@ namespace ToDoApp.ViewModel
 {
     public class DateViewModel : INotifyPropertyChanged
     {
-        private TaskViewModel _task;
+        private readonly TaskViewModel _task;
 
         private DateTime? _date;
 
@@ -82,6 +82,9 @@ namespace ToDoApp.ViewModel
             }
         }
 
+        private readonly Dictionary<string, List<string>> _errors =
+            new Dictionary<string, List<string>>();
+
         public string Errors
         {
             get
@@ -134,17 +137,12 @@ namespace ToDoApp.ViewModel
 
 
         private const string ERROR_DATE_IS_EXPIRED = "Указанная дата уже наступила";
-        private const string ERROR_TIME_IS_INCORRECT = "Указано некорректное время";
         private const string ERROR_DATE_IS_NOT_SPECIFIED = "Не указана дата";
         private const string ERROR_TIME_IS_NOT_SPECIFIED = "Не указано время";
-
         private const string ERROR_ENDING_TIME_IS_EARLIER =
             "Время окончания задачи наступит раньше времени начала";
 
-        private Dictionary<String, List<String>> _errors =
-            new Dictionary<string, List<string>>();
-
-        public void AddError(string propertyName, string error)
+        private void AddError(string propertyName, string error)
         {
             if (!_errors.ContainsKey(propertyName))
                 _errors[propertyName] = new List<string>();
@@ -155,7 +153,7 @@ namespace ToDoApp.ViewModel
             }
         }
 
-        public void RemoveError(string propertyName, string error)
+        private void RemoveError(string propertyName, string error)
         {
             if (_errors.ContainsKey(propertyName) &&
                 _errors[propertyName].Contains(error))

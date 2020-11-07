@@ -1,13 +1,14 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace ToDoApp.Model.Interfaces
 {
     public interface IRepository<T>
     {
-        List<T> GetAll(); 
+        Task<List<T>> GetAllAsync(); 
         
-        void Add(T item);
-        void Update(T item);
-        void Remove(T item);
+        System.Threading.Tasks.Task AddAsync(T item);
+        System.Threading.Tasks.Task UpdateAsync(T item);
+        System.Threading.Tasks.Task RemoveAsync(T item);
     }
 }
