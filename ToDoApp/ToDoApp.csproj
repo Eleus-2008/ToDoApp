@@ -173,20 +173,20 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Model\ApplicationContext.cs" />
-    <Compile Include="Model\AsyncRelayCommand.cs" />
-    <Compile Include="Model\CommandSaver.cs" />
-    <Compile Include="Model\Enums\HttpRequestType.cs" />
-    <Compile Include="Model\Extensions\TaskUtilities.cs" />
+    <Compile Include="Model\Auxiliary\AsyncRelayCommand.cs" />
+    <Compile Include="Model\Auxiliary\RelayCommand.cs" />
+    <Compile Include="Model\Auxiliary\TaskUtilities.cs" />
+    <Compile Include="Model\Services\ApplicationContext.cs" />
+    <Compile Include="Model\Services\DataService.cs" />
     <Compile Include="Model\Interfaces\IAsyncCommand.cs" />
+    <Compile Include="Model\Interfaces\IDataService.cs" />
     <Compile Include="Model\Interfaces\IErrorHandler.cs" />
-    <Compile Include="Model\SavingCommandDbSet.cs" />
+    <Compile Include="Model\Models\RepeatingConditions.cs" />
+    <Compile Include="Model\Models\Task.cs" />
+    <Compile Include="Model\Models\ToDoList.cs" />
     <Compile Include="Model\Enums\TypeOfRepeatTimeSpan.cs" />
     <Compile Include="Model\Interfaces\IEntity.cs" />
     <Compile Include="Model\Interfaces\IRepository.cs" />
-    <Compile Include="Model\RelayCommand.cs" />
-    <Compile Include="Model\ServerContext.cs" />
-    <Compile Include="Model\UnitOfWork.cs" />
     <Compile Include="ViewModel\DateViewModel.cs" />
     <Compile Include="ViewModel\RepeatDateViewModel.cs" />
     <Compile Include="ViewModel\TasksSorter.cs" />
@@ -199,10 +199,7 @@
     <Compile Include="View\RepeatDateWindow.xaml.cs">
       <DependentUpon>RepeatDateWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Model\RepeatingConditions.cs" />
-    <Compile Include="Model\Task.cs" />
     <Compile Include="ViewModel\TaskViewModel.cs" />
-    <Compile Include="Model\ToDoList.cs" />
     <Compile Include="ViewModel\ToDoListViewModel.cs" />
     <Compile Include="ViewModel\ToDoAppViewModel.cs" />
     <Page Include="View\DateWindow.xaml">

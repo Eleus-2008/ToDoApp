@@ -6,14 +6,16 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows.Controls;
 using System.Windows.Data;
+using Microsoft.EntityFrameworkCore;
 using ToDoApp.Model;
 using ToDoApp.Model.Enums;
+using ToDoApp.Model.Interfaces;
 
 namespace ToDoApp.ViewModel
 {
     public class ToDoAppViewModel : INotifyPropertyChanged
     {
-        private readonly UnitOfWork _unitOfWork = new UnitOfWork();
+        private readonly IDataService _dataService = new DataService();
 
         private ToDoListViewModel _unlistedTasksList;
 
@@ -73,12 +75,14 @@ namespace ToDoApp.ViewModel
                 if (value.Name == "Задачи")
                 {
                     value.ToDoList.Tasks =
-                        ToDoLists.SelectMany(list => list.Tasks.Select(task => task.Task)).Union(_unlistedTasksList.ToDoList.Tasks).ToList();
+                        ToDoLists.SelectMany(list => list.Tasks.Select(task => task.Task))
+                            .Union(_unlistedTasksList.ToDoList.Tasks).ToList();
                 }
 
                 if (value.Name == "Мой день")
                 {
-                    value.ToDoList.Tasks = ToDoLists.SelectMany(list => list.Tasks.Select(task => task.Task)).Union(_unlistedTasksList.ToDoList.Tasks)
+                    value.ToDoList.Tasks = ToDoLists.SelectMany(list => list.Tasks.Select(task => task.Task))
+                        .Union(_unlistedTasksList.ToDoList.Tasks)
                         .Where(task =>
                         {
                             if (!task.Date.HasValue)
@@ -245,10 +249,9 @@ namespace ToDoApp.ViewModel
 
         private async System.Threading.Tasks.Task InitializeToDoLists()
         {
-            var toDoLists = await _unitOfWork.ToDoLists.GetAllAsync();
-            ToDoLists = new ObservableCollection<ToDoListViewModel>(toDoLists
-                .SkipWhile(list => list.Name == "Задачи без списка")
-                .Select(list => new ToDoListViewModel(list)));
+            var toDoLists = _dataService.DbContext.ToDoLists
+                .Include(list => list.Tasks)
+                .Select(list => new ToDoListViewModel(list)).ToList();
 
             if (toDoLists.FirstOrDefault(list => list.Name == "Задачи без списка") == null)
             {
@@ -257,23 +260,29 @@ namespace ToDoApp.ViewModel
                     Name = "Задачи без списка"
                 };
                 _unlistedTasksList = new ToDoListViewModel(unlistedTasksList);
-                await _unitOfWork.ToDoLists.AddAsync(unlistedTasksList);
+                await _dataService.DbContext.ToDoLists.AddAsync(unlistedTasksList);
+                await _dataService.DbContext.SaveChangesAsync();
             }
             else
             {
-                _unlistedTasksList = new ToDoListViewModel(toDoLists.FirstOrDefault(list => list.Name == "Задачи без списка"));
+                _unlistedTasksList =
+                    toDoLists.FirstOrDefault(list => list.Name == "Задачи без списка");
+                toDoLists.Remove(toDoLists.Find(list => list.Name == "Задачи без списка"));
             }
+            
+            
+            ToDoLists = new ObservableCollection<ToDoListViewModel>(toDoLists);
 
             DefaultToDoLists.Add(new ToDoListViewModel(new ToDoList
             {
                 Name = "Задачи",
-                Tasks = toDoLists.SelectMany(x => x.Tasks).Union(_unlistedTasksList.ToDoList.Tasks).ToList()
+                Tasks = toDoLists.SelectMany(x => x.ToDoList.Tasks).Union(_unlistedTasksList.ToDoList.Tasks).ToList()
             }));
 
             DefaultToDoLists.Add(new ToDoListViewModel(new ToDoList
             {
                 Name = "Мой день",
-                Tasks = toDoLists.SelectMany(x => x.Tasks).Union(_unlistedTasksList.ToDoList.Tasks).Where(task =>
+                Tasks = toDoLists.SelectMany(x => x.ToDoList.Tasks).Union(_unlistedTasksList.ToDoList.Tasks).Where(task =>
                 {
                     if (!task.Date.HasValue)
                     {
@@ -306,7 +315,7 @@ namespace ToDoApp.ViewModel
                            CurrentList = ToDoLists.Last();
                            textBox.Text = string.Empty;
 
-                           await _unitOfWork.ToDoLists.AddAsync(newList);
+                           await _dataService.DbContext.ToDoLists.AddAsync(newList);
                        }));
             }
         }
@@ -339,7 +348,8 @@ namespace ToDoApp.ViewModel
                            var chosenItem = obj as ListBoxItem;
                            var chosenToDoList = chosenItem.Content as ToDoListViewModel;
 
-                           await _unitOfWork.ToDoLists.UpdateAsync(chosenToDoList.ToDoList);
+                           _dataService.DbContext.ToDoLists.Update(chosenToDoList.ToDoList);
+                           await _dataService.DbContext.SaveChangesAsync();
                        }));
             }
         }
@@ -363,10 +373,11 @@ namespace ToDoApp.ViewModel
 
                            foreach (var taskViewModel in chosenToDoList.Tasks)
                            {
-                               await _unitOfWork.Tasks.RemoveAsync(taskViewModel.Task);
+                               _dataService.DbContext.Tasks.Remove(taskViewModel.Task);
                            }
 
-                           await _unitOfWork.ToDoLists.RemoveAsync(chosenToDoList.ToDoList);
+                           _dataService.DbContext.ToDoLists.Remove(chosenToDoList.ToDoList);
+                           await _dataService.DbContext.SaveChangesAsync();
                        }));
             }
         }
@@ -383,7 +394,7 @@ namespace ToDoApp.ViewModel
                                if (CurrentList == DefaultToDoLists.First(list => list.Name == "Задачи") ||
                                    CurrentList == DefaultToDoLists.First(list => list.Name == "Мой день"))
                                {
-                                   CurrentTask.Task.ToDoList = _unitOfWork.ToDoLists.GetAllAsync().Result
+                                   CurrentTask.Task.ToDoList = _dataService.DbContext.ToDoLists
                                        .First(list => list.Name == "Задачи без списка");
                                }
                                else
@@ -392,8 +403,9 @@ namespace ToDoApp.ViewModel
                                }
 
                                CurrentTasksList.Add(CurrentTask);
-                               
-                               await _unitOfWork.Tasks.AddAsync(CurrentTask.Task);
+
+                               await _dataService.DbContext.Tasks.AddAsync(CurrentTask.Task);
+                               await _dataService.DbContext.SaveChangesAsync();
 
                                CurrentTask = new TaskViewModel(new Task());
 
@@ -431,7 +443,8 @@ namespace ToDoApp.ViewModel
                        {
                            var chosenItem = obj as ListBoxItem;
                            var chosenTask = chosenItem.Content as TaskViewModel;
-                           await _unitOfWork.Tasks.UpdateAsync(chosenTask.Task);
+                           _dataService.DbContext.Tasks.Update(chosenTask.Task);
+                           await _dataService.DbContext.SaveChangesAsync();
 
                            TasksView.Refresh();
                        }));
@@ -447,7 +460,8 @@ namespace ToDoApp.ViewModel
                 return _saveTaskCommand ??
                        (_saveTaskCommand = new AsyncRelayCommand<object>(async obj =>
                        {
-                           await _unitOfWork.Tasks.UpdateAsync(CurrentTask.Task);
+                           _dataService.DbContext.Tasks.Update(CurrentTask.Task);
+                           await _dataService.DbContext.SaveChangesAsync();
                            IsTaskEditing = false;
                            CurrentTask = new TaskViewModel(new Task());
 
@@ -467,7 +481,8 @@ namespace ToDoApp.ViewModel
                        {
                            var chosenItem = obj as ListBoxItem;
                            var chosenTask = chosenItem.Content as TaskViewModel;
-                           await _unitOfWork.Tasks.RemoveAsync(chosenTask.Task);
+                           _dataService.DbContext.Tasks.Remove(chosenTask.Task);
+                           await _dataService.DbContext.SaveChangesAsync();
                            CurrentTasksList.Remove(chosenTask);
                        }));
             }
