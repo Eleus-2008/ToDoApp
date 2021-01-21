@@ -176,6 +176,10 @@
     <Compile Include="Model\Auxiliary\AsyncRelayCommand.cs" />
     <Compile Include="Model\Auxiliary\RelayCommand.cs" />
     <Compile Include="Model\Auxiliary\TaskUtilities.cs" />
+    <Compile Include="Model\DTO\LoginDto.cs" />
+    <Compile Include="Model\DTO\RegisterDto.cs" />
+    <Compile Include="Model\DTO\TaskDto.cs" />
+    <Compile Include="Model\DTO\ToDoListDto.cs" />
     <Compile Include="Model\Interfaces\IAuthentication.cs" />
     <Compile Include="Model\Services\ApplicationContext.cs" />
     <Compile Include="Model\Services\Authentication.cs" />
