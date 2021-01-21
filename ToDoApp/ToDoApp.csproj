@@ -176,10 +176,12 @@
     <Compile Include="Model\Auxiliary\AsyncRelayCommand.cs" />
     <Compile Include="Model\Auxiliary\RelayCommand.cs" />
     <Compile Include="Model\Auxiliary\TaskUtilities.cs" />
+    <Compile Include="Model\Interfaces\IAuthentication.cs" />
     <Compile Include="Model\Services\ApplicationContext.cs" />
-    <Compile Include="Model\Services\DataService.cs" />
+    <Compile Include="Model\Services\Authentication.cs" />
+    <Compile Include="Model\Services\Store.cs" />
     <Compile Include="Model\Interfaces\IAsyncCommand.cs" />
-    <Compile Include="Model\Interfaces\IDataService.cs" />
+    <Compile Include="Model\Interfaces\IStore.cs" />
     <Compile Include="Model\Interfaces\IErrorHandler.cs" />
     <Compile Include="Model\Models\RepeatingConditions.cs" />
     <Compile Include="Model\Models\Task.cs" />

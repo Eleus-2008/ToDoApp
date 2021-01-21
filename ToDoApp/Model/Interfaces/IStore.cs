@@ -2,7 +2,7 @@
 
 namespace ToDoApp.Model.Interfaces
 {
-    public interface IDataService
+    public interface IStore
     {
         ApplicationContext DbContext { get; }
         bool Sync(string token);

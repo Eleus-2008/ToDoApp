@@ -4,8 +4,10 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Threading;
 using Microsoft.EntityFrameworkCore;
 using ToDoApp.Model;
 using ToDoApp.Model.Enums;
@@ -15,7 +17,8 @@ namespace ToDoApp.ViewModel
 {
     public class ToDoAppViewModel : INotifyPropertyChanged
     {
-        private readonly IDataService _dataService = new DataService();
+        private readonly IStore _store = new Store();
+        private readonly IAuthentication _authentication;
 
         private ToDoListViewModel _unlistedTasksList;
 
@@ -249,7 +252,7 @@ namespace ToDoApp.ViewModel
 
         private async System.Threading.Tasks.Task InitializeToDoLists()
         {
-            var toDoLists = _dataService.DbContext.ToDoLists
+            var toDoLists = _store.DbContext.ToDoLists
                 .Include(list => list.Tasks)
                 .Select(list => new ToDoListViewModel(list)).ToList();
 
@@ -260,8 +263,8 @@ namespace ToDoApp.ViewModel
                     Name = "Задачи без списка"
                 };
                 _unlistedTasksList = new ToDoListViewModel(unlistedTasksList);
-                await _dataService.DbContext.ToDoLists.AddAsync(unlistedTasksList);
-                await _dataService.DbContext.SaveChangesAsync();
+                await _store.DbContext.ToDoLists.AddAsync(unlistedTasksList);
+                await _store.DbContext.SaveChangesAsync();
             }
             else
             {
@@ -315,7 +318,7 @@ namespace ToDoApp.ViewModel
                            CurrentList = ToDoLists.Last();
                            textBox.Text = string.Empty;
 
-                           await _dataService.DbContext.ToDoLists.AddAsync(newList);
+                           await _store.DbContext.ToDoLists.AddAsync(newList);
                        }));
             }
         }
@@ -348,8 +351,8 @@ namespace ToDoApp.ViewModel
                            var chosenItem = obj as ListBoxItem;
                            var chosenToDoList = chosenItem.Content as ToDoListViewModel;
 
-                           _dataService.DbContext.ToDoLists.Update(chosenToDoList.ToDoList);
-                           await _dataService.DbContext.SaveChangesAsync();
+                           _store.DbContext.ToDoLists.Update(chosenToDoList.ToDoList);
+                           await _store.DbContext.SaveChangesAsync();
                        }));
             }
         }
@@ -373,11 +376,11 @@ namespace ToDoApp.ViewModel
 
                            foreach (var taskViewModel in chosenToDoList.Tasks)
                            {
-                               _dataService.DbContext.Tasks.Remove(taskViewModel.Task);
+                               _store.DbContext.Tasks.Remove(taskViewModel.Task);
                            }
 
-                           _dataService.DbContext.ToDoLists.Remove(chosenToDoList.ToDoList);
-                           await _dataService.DbContext.SaveChangesAsync();
+                           _store.DbContext.ToDoLists.Remove(chosenToDoList.ToDoList);
+                           await _store.DbContext.SaveChangesAsync();
                        }));
             }
         }
@@ -394,18 +397,17 @@ namespace ToDoApp.ViewModel
                                if (CurrentList == DefaultToDoLists.First(list => list.Name == "Задачи") ||
                                    CurrentList == DefaultToDoLists.First(list => list.Name == "Мой день"))
                                {
-                                   CurrentTask.Task.ToDoList = _dataService.DbContext.ToDoLists
-                                       .First(list => list.Name == "Задачи без списка");
+                                   CurrentTask.Task.ToDoList = _unlistedTasksList.ToDoList;
                                }
                                else
                                {
                                    CurrentTask.Task.ToDoList = CurrentList.ToDoList;
                                }
 
-                               CurrentTasksList.Add(CurrentTask);
+                               Application.Current.Dispatcher.Invoke(() => CurrentTasksList.Add(CurrentTask));
 
-                               await _dataService.DbContext.Tasks.AddAsync(CurrentTask.Task);
-                               await _dataService.DbContext.SaveChangesAsync();
+                               await _store.DbContext.Tasks.AddAsync(CurrentTask.Task);
+                               await _store.DbContext.SaveChangesAsync();
 
                                CurrentTask = new TaskViewModel(new Task());
 
@@ -443,8 +445,8 @@ namespace ToDoApp.ViewModel
                        {
                            var chosenItem = obj as ListBoxItem;
                            var chosenTask = chosenItem.Content as TaskViewModel;
-                           _dataService.DbContext.Tasks.Update(chosenTask.Task);
-                           await _dataService.DbContext.SaveChangesAsync();
+                           _store.DbContext.Tasks.Update(chosenTask.Task);
+                           await _store.DbContext.SaveChangesAsync();
 
                            TasksView.Refresh();
                        }));
@@ -460,8 +462,8 @@ namespace ToDoApp.ViewModel
                 return _saveTaskCommand ??
                        (_saveTaskCommand = new AsyncRelayCommand<object>(async obj =>
                        {
-                           _dataService.DbContext.Tasks.Update(CurrentTask.Task);
-                           await _dataService.DbContext.SaveChangesAsync();
+                           _store.DbContext.Tasks.Update(CurrentTask.Task);
+                           await _store.DbContext.SaveChangesAsync();
                            IsTaskEditing = false;
                            CurrentTask = new TaskViewModel(new Task());
 
@@ -481,8 +483,8 @@ namespace ToDoApp.ViewModel
                        {
                            var chosenItem = obj as ListBoxItem;
                            var chosenTask = chosenItem.Content as TaskViewModel;
-                           _dataService.DbContext.Tasks.Remove(chosenTask.Task);
-                           await _dataService.DbContext.SaveChangesAsync();
+                           _store.DbContext.Tasks.Remove(chosenTask.Task);
+                           await _store.DbContext.SaveChangesAsync();
                            CurrentTasksList.Remove(chosenTask);
                        }));
             }

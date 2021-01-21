@@ -2,7 +2,7 @@
 
 namespace ToDoApp.Model
 {
-    public class DataService : IDataService
+    public class Store : IStore
     {
         public ApplicationContext DbContext { get; } = new ApplicationContext();
         public bool Sync(string token)
