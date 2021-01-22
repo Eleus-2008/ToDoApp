@@ -12,13 +12,14 @@ using Microsoft.EntityFrameworkCore;
 using ToDoApp.Model;
 using ToDoApp.Model.Enums;
 using ToDoApp.Model.Interfaces;
+using ToDoApp.Model.Services;
 
 namespace ToDoApp.ViewModel
 {
     public class ToDoAppViewModel : INotifyPropertyChanged
     {
         private readonly IStore _store = new Store();
-        private readonly IAuthentication _authentication;
+        private readonly IAuthentication _authentication = new Authentication();
 
         private ToDoListViewModel _unlistedTasksList;
 
@@ -240,6 +241,9 @@ namespace ToDoApp.ViewModel
 
         public ToDoAppViewModel()
         {
+            _authentication.Login("", "");
+            _authentication.Register("", "", "");
+            
             CurrentTask = new TaskViewModel(new Task());
             CurrentList = new ToDoListViewModel(new ToDoList());
             CurrentTasksList = new ObservableCollection<TaskViewModel>();
