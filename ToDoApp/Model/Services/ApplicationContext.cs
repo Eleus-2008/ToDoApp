@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ToDoApp.Model.Enums;
+using ToDoApp.Model.Models;
 
 namespace ToDoApp.Model
 {
@@ -8,6 +9,8 @@ namespace ToDoApp.Model
     {
         public DbSet<Task> Tasks { get; set; }
         public DbSet<ToDoList> ToDoLists { get; set; }
+        public DbSet<User> Users { get; set; }
+        public DbSet<AccessToken> Tokens { get; set; }
 
         public ApplicationContext()
         {
@@ -31,7 +34,18 @@ namespace ToDoApp.Model
                 })
                 .ToTable("Tasks");
 
-            modelBuilder.Entity<ToDoList>().ToTable("ToDoLists");
+            modelBuilder.Entity<ToDoList>()
+                .ToTable("ToDoLists");
+
+            modelBuilder.Entity<User>()
+                .ToTable("Users");
+
+
+            modelBuilder.Entity<AccessToken>()
+                .ToTable("Tokens")
+                .HasOne(t => t.User)
+                .WithOne(u => u.Token)
+                .HasForeignKey<AccessToken>(t => t.UserId);
         }
     }
 }

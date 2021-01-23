@@ -181,6 +181,8 @@
     <Compile Include="Model\DTO\TaskDto.cs" />
     <Compile Include="Model\DTO\ToDoListDto.cs" />
     <Compile Include="Model\Interfaces\IAuthentication.cs" />
+    <Compile Include="Model\Models\AccessToken.cs" />
+    <Compile Include="Model\Models\User.cs" />
     <Compile Include="Model\Services\ApplicationContext.cs" />
     <Compile Include="Model\Services\Authentication.cs" />
     <Compile Include="Model\Services\Store.cs" />
