@@ -21,6 +21,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
+                <RowDefinition Height="100" />
             </Grid.RowDefinitions>
             <StackPanel>
                 <ListBox Style="{StaticResource ListBoxStyle}"
@@ -39,6 +40,17 @@
                      ItemsSource="{Binding ToDoLists}"
                      ItemTemplate="{StaticResource SidebarItemTemplate}"
                      Style="{StaticResource ListBoxStyle}" />
+            <StackPanel Grid.Row="2">
+                <ComboBox Margin="10,0"/>
+                <Button Content="Зарегистрироваться" Margin="10,10"
+                        Command="{Binding RegisterCommand}"/>
+                <StackPanel Orientation="Horizontal">
+                    <Button Content="Войти" Margin="10,0" Width="80"
+                            Command="{Binding LoginCommand}"/>
+                    <Button Content="Выйти" Margin="10,0" Width="80"
+                            Command="{Binding LogoutCommand}"/>
+                </StackPanel>
+            </StackPanel>
         </Grid>
 
         <Grid Grid.Column="1" Background="Plum">
