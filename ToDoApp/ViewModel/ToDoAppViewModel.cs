@@ -12,14 +12,15 @@ using Microsoft.EntityFrameworkCore;
 using ToDoApp.Model;
 using ToDoApp.Model.Enums;
 using ToDoApp.Model.Interfaces;
+using ToDoApp.Model.Models;
 using ToDoApp.Model.Services;
 
 namespace ToDoApp.ViewModel
 {
     public class ToDoAppViewModel : INotifyPropertyChanged
     {
-        private readonly IStore _store = new Store();
-        private readonly IAuthentication _authentication = new Authentication();
+        private readonly IStore _store;
+        private readonly IAuthentication _authentication;
 
         private ToDoListViewModel _unlistedTasksList;
 
@@ -241,22 +242,21 @@ namespace ToDoApp.ViewModel
 
         public ToDoAppViewModel()
         {
-            _authentication.Login("", "");
-            _authentication.Register("", "", "");
+            _store = new Store();
+            _authentication = new Authentication(_store.DbContext);
             
-            CurrentTask = new TaskViewModel(new Task());
-            CurrentList = new ToDoListViewModel(new ToDoList());
-            CurrentTasksList = new ObservableCollection<TaskViewModel>();
-
-            InitializeToDoLists().ContinueWith(task =>
+            InitializeToDoLists(_authentication.CurrentUser).ContinueWith(task =>
             {
                 TasksView = new ListCollectionView(CurrentTasksList) {CustomSort = new TasksSorter()};
             });
+            
+            CurrentTask = new TaskViewModel(new Task());
         }
 
-        private async System.Threading.Tasks.Task InitializeToDoLists()
+        private async System.Threading.Tasks.Task InitializeToDoLists(User user)
         {
             var toDoLists = _store.DbContext.ToDoLists
+                .Where(list => list.User == user)
                 .Include(list => list.Tasks)
                 .Select(list => new ToDoListViewModel(list)).ToList();
 
@@ -267,7 +267,7 @@ namespace ToDoApp.ViewModel
                     Name = "Задачи без списка"
                 };
                 _unlistedTasksList = new ToDoListViewModel(unlistedTasksList);
-                await _store.DbContext.ToDoLists.AddAsync(unlistedTasksList);
+                _store.DbContext.ToDoLists.Add(unlistedTasksList);
                 await _store.DbContext.SaveChangesAsync();
             }
             else
@@ -303,6 +303,48 @@ namespace ToDoApp.ViewModel
             CurrentList = DefaultToDoLists[0];
         }
 
+        private RelayCommand _registerCommand;
+
+        public RelayCommand RegisterCommand
+        {
+            get
+            {
+                return _registerCommand ??
+                       (_registerCommand = new RelayCommand(obj =>
+                       {
+                           
+                       }));
+            }
+        }
+        
+        private RelayCommand _loginCommand;
+
+        public RelayCommand LoginCommand
+        {
+            get
+            {
+                return _loginCommand ??
+                       (_loginCommand = new RelayCommand(obj =>
+                       {
+                           
+                       }));
+            }
+        }
+        
+        private RelayCommand _logoutCommand;
+
+        public RelayCommand LogoutCommand
+        {
+            get
+            {
+                return _logoutCommand ??
+                       (_logoutCommand = new RelayCommand(obj =>
+                       {
+                           
+                       }));
+            }
+        }
+        
         private AsyncRelayCommand<object> _addListCommand;
 
         public AsyncRelayCommand<object> AddListCommand
@@ -315,14 +357,16 @@ namespace ToDoApp.ViewModel
                            var textBox = obj as TextBox;
                            var newList = new ToDoList
                            {
-                               Name = textBox.Text
+                               Name = textBox.Text,
+                               User = _authentication.CurrentUser
                            };
 
                            ToDoLists.Add(new ToDoListViewModel(newList));
                            CurrentList = ToDoLists.Last();
                            textBox.Text = string.Empty;
 
-                           await _store.DbContext.ToDoLists.AddAsync(newList);
+                           _store.DbContext.ToDoLists.Add(newList);
+                           await _store.DbContext.SaveChangesAsync();
                        }));
             }
         }
@@ -410,7 +454,7 @@ namespace ToDoApp.ViewModel
 
                                Application.Current.Dispatcher.Invoke(() => CurrentTasksList.Add(CurrentTask));
 
-                               await _store.DbContext.Tasks.AddAsync(CurrentTask.Task);
+                                _store.DbContext.Tasks.Add(CurrentTask.Task);
                                await _store.DbContext.SaveChangesAsync();
 
                                CurrentTask = new TaskViewModel(new Task());
