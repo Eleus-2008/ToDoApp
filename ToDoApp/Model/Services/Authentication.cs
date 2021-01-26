@@ -16,8 +16,18 @@ namespace ToDoApp.Model.Services
     {
         private readonly HttpClient _client;
         private readonly ApplicationContext _context;
+        private User _currentUser;
 
-        public User CurrentUser { get; private set; }
+        public User CurrentUser
+        {
+            get => _currentUser;
+            private set
+            {
+                _currentUser = value;
+                _currentUser.LastLogonTime = DateTime.Now;
+            }
+        }
+
         public AccessToken CurrentToken { get; private set; }
 
         public Authentication(ApplicationContext context)
@@ -27,19 +37,19 @@ namespace ToDoApp.Model.Services
             {
                 BaseAddress = new Uri("https://localhost:5001/")
             };
-            var guest = context.Users.FirstOrDefault(user => user.Username == "guest");
-            if (guest == null)
+            
+            var lastUser = _context.Users.OrderByDescending(user => user.LastLogonTime).FirstOrDefault();
+            if (lastUser != null)
+            {
+                CurrentUser = lastUser;
+            }
+            else
             {
                 CurrentUser = new User
                 {
                     Username = "guest"
                 };
             }
-            else
-            {
-                CurrentUser = guest;
-            }
-
         }
         
         public async Task<bool> Register(string username, string email, string password)
