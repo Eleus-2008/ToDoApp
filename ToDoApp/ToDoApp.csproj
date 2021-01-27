@@ -195,14 +195,23 @@
     <Compile Include="Model\Enums\TypeOfRepeatTimeSpan.cs" />
     <Compile Include="Model\Interfaces\IEntity.cs" />
     <Compile Include="Model\Interfaces\IRepository.cs" />
-    <Compile Include="ViewModel\DateViewModel.cs" />
-    <Compile Include="ViewModel\RepeatDateViewModel.cs" />
+    <Compile Include="Properties\Annotations.cs" />
     <Compile Include="ViewModel\TasksSorter.cs" />
+    <Compile Include="ViewModel\WindowVM\DateViewModel.cs" />
+    <Compile Include="ViewModel\WindowVM\LoginViewModel.cs" />
+    <Compile Include="ViewModel\WindowVM\RegisterViewModel.cs" />
+    <Compile Include="ViewModel\WindowVM\RepeatDateViewModel.cs" />
     <Compile Include="View\AppDictionary.xaml.cs">
       <DependentUpon>AppDictionary.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\DateWindow.xaml.cs">
       <DependentUpon>DateWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\LoginWindow.xaml.cs">
+      <DependentUpon>LoginWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\RegisterWindow.xaml.cs">
+      <DependentUpon>RegisterWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\RepeatDateWindow.xaml.cs">
       <DependentUpon>RepeatDateWindow.xaml</DependentUpon>
@@ -218,6 +227,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="View\LoginWindow.xaml" />
     <Page Include="View\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -230,6 +240,7 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="View\RegisterWindow.xaml" />
     <Page Include="View\RepeatDateWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
