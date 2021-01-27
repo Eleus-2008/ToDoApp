@@ -14,7 +14,7 @@ namespace ToDoApp.Model.Services
 {
     public class Authentication : IAuthentication
     {
-        private readonly HttpClient _client;
+        private readonly HttpClient _httpClient;
         private readonly ApplicationContext _context;
         private User _currentUser;
 
@@ -30,13 +30,10 @@ namespace ToDoApp.Model.Services
 
         public AccessToken CurrentToken { get; private set; }
 
-        public Authentication(ApplicationContext context)
+        public Authentication(ApplicationContext context, HttpClient webHttpClient)
         {
             _context = context;
-            _client = new HttpClient
-            {
-                BaseAddress = new Uri("https://localhost:5001/")
-            };
+            _httpClient = webHttpClient;
             
             var lastUser = _context.Users.OrderByDescending(user => user.LastLogonTime).FirstOrDefault();
             if (lastUser != null)
@@ -65,7 +62,7 @@ namespace ToDoApp.Model.Services
 
             try
             {
-                var response = await _client.PostAsync("api/authentication/register", data);
+                var response = await _httpClient.PostAsync("api/authentication/register", data);
                 if (!response.IsSuccessStatusCode)
                 {
                     return false;
@@ -91,7 +88,7 @@ namespace ToDoApp.Model.Services
             var data = new StringContent(json, Encoding.UTF8, "application/json");
             try
             {
-                var response = await _client.PostAsync("api/authentication/login", data);
+                var response = await _httpClient.PostAsync("api/authentication/login", data);
                 if (response.IsSuccessStatusCode)
                 {
                     var result = JsonConvert.DeserializeObject<AccessToken>(await response.Content.ReadAsStringAsync());

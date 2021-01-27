@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
+using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
@@ -14,6 +15,7 @@ using ToDoApp.Model.Enums;
 using ToDoApp.Model.Interfaces;
 using ToDoApp.Model.Models;
 using ToDoApp.Model.Services;
+using ToDoApp.View;
 
 namespace ToDoApp.ViewModel
 {
@@ -21,6 +23,7 @@ namespace ToDoApp.ViewModel
     {
         private readonly IStore _store;
         private readonly IAuthentication _authentication;
+        private readonly HttpClient _httpClient;
 
         private ToDoListViewModel _unlistedTasksList;
 
@@ -242,9 +245,13 @@ namespace ToDoApp.ViewModel
 
         public ToDoAppViewModel()
         {
+            _httpClient = new HttpClient
+            {
+                BaseAddress = new Uri("https://localhost:5001/")
+            };
             _store = new Store();
-            _authentication = new Authentication(_store.DbContext);
-            
+            _authentication = new Authentication(_store.DbContext, _httpClient);
+
             InitializeToDoLists(_authentication.CurrentUser).ContinueWith(task =>
             {
                 TasksView = new ListCollectionView(CurrentTasksList) {CustomSort = new TasksSorter()};
@@ -312,7 +319,9 @@ namespace ToDoApp.ViewModel
                 return _registerCommand ??
                        (_registerCommand = new RelayCommand(obj =>
                        {
-                           
+                           var viewModel = new RegisterViewModel(_authentication);
+                           var window = new RegisterWindow(viewModel);
+                           window.ShowDialog();
                        }));
             }
         }
@@ -326,21 +335,24 @@ namespace ToDoApp.ViewModel
                 return _loginCommand ??
                        (_loginCommand = new RelayCommand(obj =>
                        {
-                           
+                           var viewModel = new LoginViewModel(_authentication);
+                           var window = new LoginWindow(viewModel);
+                           window.ShowDialog();
                        }));
             }
         }
         
-        private RelayCommand _logoutCommand;
+        private AsyncRelayCommand<object> _logoutCommand;
 
-        public RelayCommand LogoutCommand
+        public AsyncRelayCommand<object> LogoutCommand
         {
             get
             {
                 return _logoutCommand ??
-                       (_logoutCommand = new RelayCommand(obj =>
+                       (_logoutCommand = new AsyncRelayCommand<object>(async obj =>
                        {
-                           
+                           await _authentication.Logout();
+                           await InitializeToDoLists(_authentication.CurrentUser);
                        }));
             }
         }
