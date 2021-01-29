@@ -21,7 +21,7 @@ namespace ToDoApp.Model.Services
         public User CurrentUser
         {
             get => _currentUser;
-            private set
+            set
             {
                 _currentUser = value;
                 _currentUser.LastLogonTime = DateTime.Now;
@@ -35,7 +35,7 @@ namespace ToDoApp.Model.Services
             _context = context;
             _httpClient = webHttpClient;
             
-            var lastUser = _context.Users.OrderByDescending(user => user.LastLogonTime).FirstOrDefault();
+            var lastUser = _context.Users.Where(user => user.Token != null).OrderByDescending(user => user.LastLogonTime).FirstOrDefault();
             if (lastUser != null)
             {
                 CurrentUser = lastUser;

@@ -6,7 +6,7 @@ namespace ToDoApp.Model.Interfaces
 {
     public interface IAuthentication
     {
-        User CurrentUser { get; }
+        User CurrentUser { get; set; }
         AccessToken CurrentToken { get; }
         Task<bool> Register(string username, string email, string password);
         Task<(bool isSuccess, AccessToken token)> Login(string username, string password);
