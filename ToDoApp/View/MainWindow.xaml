@@ -41,7 +41,15 @@
                      ItemTemplate="{StaticResource SidebarItemTemplate}"
                      Style="{StaticResource ListBoxStyle}" />
             <StackPanel Grid.Row="2">
-                <ComboBox Margin="10,0"/>
+                <ComboBox Margin="10,0"
+                          ItemsSource="{Binding Users}"
+                          SelectedIndex="{Binding SelectedUserIndex}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Username}"/>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
                 <Button Content="Зарегистрироваться" Margin="10,10"
                         Command="{Binding RegisterCommand}"/>
                 <StackPanel Orientation="Horizontal">
