@@ -30,8 +30,17 @@ namespace ToDoApp.ViewModel
         public ObservableCollection<ToDoListViewModel> DefaultToDoLists { get; set; } =
             new ObservableCollection<ToDoListViewModel>();
 
-        public ObservableCollection<ToDoListViewModel> ToDoLists { get; set; } =
-            new ObservableCollection<ToDoListViewModel>();
+        
+        private ObservableCollection<ToDoListViewModel> _toDoLists = new ObservableCollection<ToDoListViewModel>();
+        public ObservableCollection<ToDoListViewModel> ToDoLists
+        {
+            get => _toDoLists;
+            set
+            {
+                _toDoLists = value;
+                OnPropertyChanged();
+            }
+        }
 
         private ObservableCollection<TaskViewModel> _currentTasksList;
 
@@ -43,6 +52,21 @@ namespace ToDoApp.ViewModel
                 _currentTasksList = value;
                 TasksView = new ListCollectionView(CurrentTasksList) {CustomSort = new TasksSorter()};
                 OnPropertyChanged();
+            }
+        }
+
+        public ObservableCollection<User> Users { get; } = new ObservableCollection<User>();
+        private int _selectedUserIndex;
+
+        public int SelectedUserIndex
+        {
+            get => _selectedUserIndex;
+            set
+            {
+                _selectedUserIndex = value;
+                OnPropertyChanged();
+                _authentication.CurrentUser = Users[_selectedUserIndex];
+                InitializeToDoLists(Users[_selectedUserIndex]);
             }
         }
 
@@ -252,12 +276,23 @@ namespace ToDoApp.ViewModel
             _store = new Store();
             _authentication = new Authentication(_store.DbContext, _httpClient);
 
-            InitializeToDoLists(_authentication.CurrentUser).ContinueWith(task =>
+            /*InitializeToDoLists(_authentication.CurrentUser).ContinueWith(task =>
             {
                 TasksView = new ListCollectionView(CurrentTasksList) {CustomSort = new TasksSorter()};
-            });
+            });*/
             
             CurrentTask = new TaskViewModel(new Task());
+
+            foreach (var user in _store.DbContext.Users.Where(user => user.Token != null).OrderByDescending(user => user.LastLogonTime))
+            {
+                Users.Add(user);
+            }
+
+            if (!Users.Any())
+            {
+                Users.Add(_store.DbContext.Users.FirstOrDefault(user => user.Username == "guest"));
+            }
+            SelectedUserIndex = Users.IndexOf(_authentication.CurrentUser);
         }
 
         private async System.Threading.Tasks.Task InitializeToDoLists(User user)
@@ -271,7 +306,8 @@ namespace ToDoApp.ViewModel
             {
                 var unlistedTasksList = new ToDoList
                 {
-                    Name = "Задачи без списка"
+                    Name = "Задачи без списка",
+                    User = _authentication.CurrentUser
                 };
                 _unlistedTasksList = new ToDoListViewModel(unlistedTasksList);
                 _store.DbContext.ToDoLists.Add(unlistedTasksList);
@@ -287,27 +323,31 @@ namespace ToDoApp.ViewModel
             
             ToDoLists = new ObservableCollection<ToDoListViewModel>(toDoLists);
 
-            DefaultToDoLists.Add(new ToDoListViewModel(new ToDoList
+            if (!DefaultToDoLists.Any())
             {
-                Name = "Задачи",
-                Tasks = toDoLists.SelectMany(x => x.ToDoList.Tasks).Union(_unlistedTasksList.ToDoList.Tasks).ToList()
-            }));
-
-            DefaultToDoLists.Add(new ToDoListViewModel(new ToDoList
-            {
-                Name = "Мой день",
-                Tasks = toDoLists.SelectMany(x => x.ToDoList.Tasks).Union(_unlistedTasksList.ToDoList.Tasks).Where(task =>
+                DefaultToDoLists.Add(new ToDoListViewModel(new ToDoList
                 {
-                    if (!task.Date.HasValue)
-                    {
-                        return true;
-                    }
+                    Name = "Задачи",
+                    Tasks = toDoLists.SelectMany(x => x.ToDoList.Tasks).Union(_unlistedTasksList.ToDoList.Tasks).ToList()
+                }));
 
-                    return task.Date == DateTime.Today;
-                }).ToList()
-            }));
+                DefaultToDoLists.Add(new ToDoListViewModel(new ToDoList
+                {
+                    Name = "Мой день",
+                    Tasks = toDoLists.SelectMany(x => x.ToDoList.Tasks).Union(_unlistedTasksList.ToDoList.Tasks).Where(task =>
+                    {
+                        if (!task.Date.HasValue)
+                        {
+                            return true;
+                        }
+
+                        return task.Date == DateTime.Today;
+                    }).ToList()
+                }));
+            }
 
             CurrentList = DefaultToDoLists[0];
+            TasksView = new ListCollectionView(CurrentTasksList) {CustomSort = new TasksSorter()};
         }
 
         private RelayCommand _registerCommand;
@@ -326,18 +366,22 @@ namespace ToDoApp.ViewModel
             }
         }
         
-        private RelayCommand _loginCommand;
+        private AsyncRelayCommand<object> _loginCommand;
 
-        public RelayCommand LoginCommand
+        public AsyncRelayCommand<object> LoginCommand
         {
             get
             {
                 return _loginCommand ??
-                       (_loginCommand = new RelayCommand(obj =>
+                       (_loginCommand = new AsyncRelayCommand<object>(async obj =>
                        {
                            var viewModel = new LoginViewModel(_authentication);
                            var window = new LoginWindow(viewModel);
                            window.ShowDialog();
+                           // надо переписать, т.к. вызывается даже если пользователь не изменяется
+                           Users.Add(_authentication.CurrentUser);
+                           SelectedUserIndex = Users.IndexOf(_authentication.CurrentUser);
+                           //await InitializeToDoLists(_authentication.CurrentUser);
                        }));
             }
         }
@@ -351,8 +395,10 @@ namespace ToDoApp.ViewModel
                 return _logoutCommand ??
                        (_logoutCommand = new AsyncRelayCommand<object>(async obj =>
                        {
+                           Users.Remove(_authentication.CurrentUser);
                            await _authentication.Logout();
-                           await InitializeToDoLists(_authentication.CurrentUser);
+                           SelectedUserIndex = Users.IndexOf(_authentication.CurrentUser);
+                           //await InitializeToDoLists(_authentication.CurrentUser);
                        }));
             }
         }
