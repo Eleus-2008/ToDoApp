@@ -30,10 +30,10 @@ namespace ToDoApp.Model.Services
 
         public AccessToken CurrentToken { get; private set; }
 
-        public Authentication(ApplicationContext context, HttpClient webHttpClient)
+        public Authentication(ApplicationContext context, HttpClient httpClient)
         {
             _context = context;
-            _httpClient = webHttpClient;
+            _httpClient = httpClient;
             
             var lastUser = _context.Users.Where(user => user.Token != null).OrderByDescending(user => user.LastLogonTime).FirstOrDefault();
             if (lastUser != null)
@@ -42,10 +42,20 @@ namespace ToDoApp.Model.Services
             }
             else
             {
-                CurrentUser = new User
+                var guest = _context.Users.FirstOrDefault(user => user.Username == "guest");
+                if (guest != null)
                 {
-                    Username = "guest"
-                };
+                    CurrentUser = guest;
+                }
+                else
+                {
+                    CurrentUser = new User
+                    {
+                        Username = "guest"
+                    };
+                    _context.Users.Add(CurrentUser);
+                    _context.SaveChanges();
+                }
             }
         }
         

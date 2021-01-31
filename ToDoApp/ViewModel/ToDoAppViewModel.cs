@@ -30,8 +30,9 @@ namespace ToDoApp.ViewModel
         public ObservableCollection<ToDoListViewModel> DefaultToDoLists { get; set; } =
             new ObservableCollection<ToDoListViewModel>();
 
-        
+
         private ObservableCollection<ToDoListViewModel> _toDoLists = new ObservableCollection<ToDoListViewModel>();
+
         public ObservableCollection<ToDoListViewModel> ToDoLists
         {
             get => _toDoLists;
@@ -280,10 +281,11 @@ namespace ToDoApp.ViewModel
             {
                 TasksView = new ListCollectionView(CurrentTasksList) {CustomSort = new TasksSorter()};
             });*/
-            
+
             CurrentTask = new TaskViewModel(new Task());
 
-            foreach (var user in _store.DbContext.Users.Where(user => user.Token != null).OrderByDescending(user => user.LastLogonTime))
+            foreach (var user in _store.DbContext.Users.Where(user => user.Token != null)
+                .OrderByDescending(user => user.LastLogonTime))
             {
                 Users.Add(user);
             }
@@ -292,6 +294,7 @@ namespace ToDoApp.ViewModel
             {
                 Users.Add(_store.DbContext.Users.FirstOrDefault(user => user.Username == "guest"));
             }
+
             SelectedUserIndex = Users.IndexOf(_authentication.CurrentUser);
         }
 
@@ -319,8 +322,8 @@ namespace ToDoApp.ViewModel
                     toDoLists.FirstOrDefault(list => list.Name == "Задачи без списка");
                 toDoLists.Remove(toDoLists.Find(list => list.Name == "Задачи без списка"));
             }
-            
-            
+
+
             ToDoLists = new ObservableCollection<ToDoListViewModel>(toDoLists);
 
             if (!DefaultToDoLists.Any())
@@ -328,21 +331,23 @@ namespace ToDoApp.ViewModel
                 DefaultToDoLists.Add(new ToDoListViewModel(new ToDoList
                 {
                     Name = "Задачи",
-                    Tasks = toDoLists.SelectMany(x => x.ToDoList.Tasks).Union(_unlistedTasksList.ToDoList.Tasks).ToList()
+                    Tasks = toDoLists.SelectMany(x => x.ToDoList.Tasks).Union(_unlistedTasksList.ToDoList.Tasks)
+                        .ToList()
                 }));
 
                 DefaultToDoLists.Add(new ToDoListViewModel(new ToDoList
                 {
                     Name = "Мой день",
-                    Tasks = toDoLists.SelectMany(x => x.ToDoList.Tasks).Union(_unlistedTasksList.ToDoList.Tasks).Where(task =>
-                    {
-                        if (!task.Date.HasValue)
+                    Tasks = toDoLists.SelectMany(x => x.ToDoList.Tasks).Union(_unlistedTasksList.ToDoList.Tasks).Where(
+                        task =>
                         {
-                            return true;
-                        }
+                            if (!task.Date.HasValue)
+                            {
+                                return true;
+                            }
 
-                        return task.Date == DateTime.Today;
-                    }).ToList()
+                            return task.Date == DateTime.Today;
+                        }).ToList()
                 }));
             }
 
@@ -365,7 +370,7 @@ namespace ToDoApp.ViewModel
                        }));
             }
         }
-        
+
         private AsyncRelayCommand<object> _loginCommand;
 
         public AsyncRelayCommand<object> LoginCommand
@@ -378,14 +383,47 @@ namespace ToDoApp.ViewModel
                            var viewModel = new LoginViewModel(_authentication);
                            var window = new LoginWindow(viewModel);
                            window.ShowDialog();
-                           // надо переписать, т.к. вызывается даже если пользователь не изменяется
+
+                           if (_authentication.CurrentUser.Username != "guest" && _store.DbContext.ToDoLists.Any(list => list.User.Username == "guest"))
+                           {
+                               var guest = _store.DbContext.Users.FirstOrDefault(user => user.Username == "guest");
+                               foreach (var list in _store.DbContext.ToDoLists.Where(list => list.User == guest))
+                               {
+                                   if (list.Name == "Задачи без списка")
+                                   {
+                                       var todolist = _store.DbContext.ToDoLists.FirstOrDefault(l =>
+                                           l.User == _authentication.CurrentUser &&
+                                           l.Name == "Задачи без списка");
+                                       if (todolist == null)
+                                       {
+                                           todolist = new ToDoList
+                                           {
+                                               Name = "Задачи без списка",
+                                               User = _authentication.CurrentUser
+                                           };
+                                       }
+                                       foreach (var task in list.Tasks)
+                                       {
+                                           task.ToDoList = todolist;
+                                       }
+                                   }
+                                   else
+                                   {
+                                       list.User = _authentication.CurrentUser;
+                                   }
+
+                                   await _store.DbContext.SaveChangesAsync();
+                                   
+                                   Users.Remove(guest);
+                               }
+                           }
+
                            Users.Add(_authentication.CurrentUser);
                            SelectedUserIndex = Users.IndexOf(_authentication.CurrentUser);
-                           //await InitializeToDoLists(_authentication.CurrentUser);
                        }));
             }
         }
-        
+
         private AsyncRelayCommand<object> _logoutCommand;
 
         public AsyncRelayCommand<object> LogoutCommand
@@ -402,7 +440,7 @@ namespace ToDoApp.ViewModel
                        }));
             }
         }
-        
+
         private AsyncRelayCommand<object> _addListCommand;
 
         public AsyncRelayCommand<object> AddListCommand
@@ -512,7 +550,7 @@ namespace ToDoApp.ViewModel
 
                                Application.Current.Dispatcher.Invoke(() => CurrentTasksList.Add(CurrentTask));
 
-                                _store.DbContext.Tasks.Add(CurrentTask.Task);
+                               _store.DbContext.Tasks.Add(CurrentTask.Task);
                                await _store.DbContext.SaveChangesAsync();
 
                                CurrentTask = new TaskViewModel(new Task());
