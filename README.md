@@ -2,8 +2,9 @@
 ## Description:
 Classic task manager with authentification and synchronization capabilities
 ## Functionality:
-- Add, change and remove tasks` lists
+- Add, change and remove task lists
 - Add, change and remove tasks
-- Set task`s date, time and repeat condition
-- Register, login and logout _(in progress)_
+- Set task date, time and repeat conditions
+- Register, login and logout
+- Use guest mode
 - Synchronize your tasks with online storage _(in progress)_
