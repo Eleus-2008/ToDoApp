@@ -277,14 +277,10 @@ namespace ToDoApp.ViewModel
             _store = new Store();
             _authentication = new Authentication(_store.DbContext, _httpClient);
 
-            /*InitializeToDoLists(_authentication.CurrentUser).ContinueWith(task =>
-            {
-                TasksView = new ListCollectionView(CurrentTasksList) {CustomSort = new TasksSorter()};
-            });*/
 
             CurrentTask = new TaskViewModel(new Task());
 
-            foreach (var user in _store.DbContext.Users.Where(user => user.Token != null)
+            foreach (var user in _store.DbContext.Users.Where(user => user.Token != null).Include(user => user.Token)
                 .OrderByDescending(user => user.LastLogonTime))
             {
                 Users.Add(user);
@@ -418,8 +414,11 @@ namespace ToDoApp.ViewModel
                                }
                            }
 
-                           Users.Add(_authentication.CurrentUser);
-                           SelectedUserIndex = Users.IndexOf(_authentication.CurrentUser);
+                           if (!Users.Contains(_authentication.CurrentUser))
+                           {
+                               Users.Add(_authentication.CurrentUser);
+                               SelectedUserIndex = Users.IndexOf(_authentication.CurrentUser);   
+                           }
                        }));
             }
         }
@@ -435,8 +434,13 @@ namespace ToDoApp.ViewModel
                        {
                            Users.Remove(_authentication.CurrentUser);
                            await _authentication.Logout();
+                           
+                           if (!Users.Any())
+                           {
+                               Users.Add(_store.DbContext.Users.FirstOrDefault(user => user.Username == "guest"));
+                           }
+
                            SelectedUserIndex = Users.IndexOf(_authentication.CurrentUser);
-                           //await InitializeToDoLists(_authentication.CurrentUser);
                        }));
             }
         }

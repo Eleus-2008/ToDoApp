@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using ToDoApp.Model.DTO;
 using ToDoApp.Model.Interfaces;
@@ -24,7 +25,10 @@ namespace ToDoApp.Model.Services
             set
             {
                 _currentUser = value;
-                _currentUser.LastLogonTime = DateTime.Now;
+                if (_currentUser != null)
+                {
+                    _currentUser.LastLogonTime = DateTime.Now;
+                }
             }
         }
 
@@ -35,30 +39,9 @@ namespace ToDoApp.Model.Services
             _context = context;
             _httpClient = httpClient;
             
-            var lastUser = _context.Users.Where(user => user.Token != null).OrderByDescending(user => user.LastLogonTime).FirstOrDefault();
-            if (lastUser != null)
-            {
-                CurrentUser = lastUser;
-            }
-            else
-            {
-                var guest = _context.Users.FirstOrDefault(user => user.Username == "guest");
-                if (guest != null)
-                {
-                    CurrentUser = guest;
-                }
-                else
-                {
-                    CurrentUser = new User
-                    {
-                        Username = "guest"
-                    };
-                    _context.Users.Add(CurrentUser);
-                    _context.SaveChanges();
-                }
-            }
+            SetActualUser();
         }
-        
+
         public async Task<bool> Register(string username, string email, string password)
         {
             var dto = new RegisterDto
@@ -141,11 +124,44 @@ namespace ToDoApp.Model.Services
 
         public async System.Threading.Tasks.Task Logout()
         {
-            _context.Tokens.Remove(CurrentToken);
-            await _context.SaveChangesAsync();
+            if (CurrentToken != null)
+            {
+                _context.Tokens.Remove(CurrentToken);
+                await _context.SaveChangesAsync();
+            }
             
             CurrentUser = null;
             CurrentToken = null;
+            
+            SetActualUser();
+        }
+        
+        private void SetActualUser()
+        {
+            var lastUser = _context.Users.Where(user => user.Token != null).Include(user => user.Token).OrderByDescending(user => user.LastLogonTime)
+                .FirstOrDefault();
+            if (lastUser != null)
+            {
+                CurrentUser = lastUser;
+                CurrentToken = lastUser.Token;
+            }
+            else
+            {
+                var guest = _context.Users.FirstOrDefault(user => user.Username == "guest");
+                if (guest != null)
+                {
+                    CurrentUser = guest;
+                }
+                else
+                {
+                    CurrentUser = new User
+                    {
+                        Username = "guest"
+                    };
+                    _context.Users.Add(CurrentUser);
+                    _context.SaveChanges();
+                }
+            }
         }
     }
 }
