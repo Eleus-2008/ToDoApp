@@ -44,8 +44,6 @@ namespace ToDoApp.ViewModel
                 OnPropertyChanged();
             }
         }
-        
-        public bool IsSuccess { get; private set; }
 
         public RegisterViewModel(IAuthentication authentication)
         {
@@ -64,14 +62,24 @@ namespace ToDoApp.ViewModel
                            try
                            {
                                var result = await _authentication.Register(Username, Email, Password);
-                               IsSuccess = result;
+                               if (result)
+                               {
+                                   OnRegisterSucceeded();
+                               }
                            }
                            catch
                            {
-                               IsSuccess = false;
+                               // ignored
                            }
                        }));
             }
+        }
+
+        public event EventHandler RegisterSucceeded;
+        
+        protected virtual void OnRegisterSucceeded()
+        {
+            RegisterSucceeded?.Invoke(this, EventArgs.Empty);
         }
         
         public event PropertyChangedEventHandler PropertyChanged;

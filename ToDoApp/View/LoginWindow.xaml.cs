@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 using ToDoApp.ViewModel;
 
 namespace ToDoApp.View
@@ -7,16 +8,14 @@ namespace ToDoApp.View
     {
         public LoginWindow(LoginViewModel viewModel)
         {
+            viewModel.LoginSucceeded += LoginWindow_Succeeded;
             DataContext = viewModel;
             InitializeComponent();
         }
 
-        private void LoginButton_Click(object sender, RoutedEventArgs e)
+        private void LoginWindow_Succeeded(object sender, EventArgs e)
         {
-            if (((LoginViewModel)DataContext).IsSuccess)
-            {
-                Close();
-            }
+            Close();
         }
 
         private void ExitButton_Click(object sender, RoutedEventArgs e)

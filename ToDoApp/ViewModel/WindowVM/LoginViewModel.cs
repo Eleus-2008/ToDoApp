@@ -33,9 +33,6 @@ namespace ToDoApp.ViewModel
                 OnPropertyChanged();
             }
         }
-        
-        public bool IsSuccess { get; private set; }
-
         public LoginViewModel(IAuthentication authentication)
         {
             _authentication = authentication;
@@ -53,16 +50,25 @@ namespace ToDoApp.ViewModel
                            try
                            {
                                var result = await _authentication.Login(Username, Password);
-                               IsSuccess = result.isSuccess;
+                               if (result.isSuccess)
+                               {
+                                   OnLoginSucceeded();
+                               }
                            }
                            catch
                            {
-                               IsSuccess = false;
+                               // ignored
                            }
                        }));
             }
         }
+
+        public event EventHandler LoginSucceeded;
         
+        protected virtual void OnLoginSucceeded()
+        {
+            LoginSucceeded?.Invoke(this, EventArgs.Empty);
+        }
         
         public event PropertyChangedEventHandler PropertyChanged;
 

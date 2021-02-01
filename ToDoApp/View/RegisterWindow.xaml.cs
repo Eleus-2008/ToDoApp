@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 using ToDoApp.ViewModel;
 
 namespace ToDoApp.View
@@ -7,21 +8,19 @@ namespace ToDoApp.View
     {
         public RegisterWindow(RegisterViewModel viewModel)
         {
+            viewModel.RegisterSucceeded += RegisterWindow_Succeeded;
             DataContext = viewModel;
             InitializeComponent();
         }
 
-        private void ExitButton_Click(object sender, RoutedEventArgs e)
+        private void RegisterWindow_Succeeded(object sender, EventArgs e)
         {
             Close();
         }
-
-        private void RegisterButton_Click(object sender, RoutedEventArgs e)
+        
+        private void ExitButton_Click(object sender, RoutedEventArgs e)
         {
-            if (((RegisterViewModel)DataContext).IsSuccess)
-            {
-                Close();
-            }
+            Close();
         }
     }
 }
