@@ -146,6 +146,18 @@ namespace ToDoApp.ViewModel
             }
         }
 
+        private bool _isSynced;
+
+        public bool IsSynced
+        {
+            get => _isSynced;
+            set
+            {
+                _isSynced = value;
+                OnPropertyChanged();
+            }
+        }
+
         public bool IsNotTaskEditing => !IsTaskEditing;
         public bool IsRepeatComboboxEnabled => CurrentTask.Date.HasValue;
 
@@ -274,9 +286,8 @@ namespace ToDoApp.ViewModel
             {
                 BaseAddress = new Uri("https://localhost:5001/")
             };
-            _store = new Store();
+            _store = new Store(_httpClient);
             _authentication = new Authentication(_store.DbContext, _httpClient);
-
 
             CurrentTask = new TaskViewModel(new Task());
 
@@ -351,6 +362,31 @@ namespace ToDoApp.ViewModel
             TasksView = new ListCollectionView(CurrentTasksList) {CustomSort = new TasksSorter()};
         }
 
+        private AsyncRelayCommand<object> _syncCommand;
+        
+        public AsyncRelayCommand<object> SyncCommand
+        {
+            get
+            {
+                return _syncCommand ??
+                       (_syncCommand = new AsyncRelayCommand<object>(async obj =>
+                       {
+                           if (_authentication.CurrentUser.Token == null || _authentication.CurrentUser.Username == "guest")
+                           {
+                               throw new NullReferenceException("Token is null or user is guest");
+                           }
+
+                           if (_authentication.CurrentToken.ExpirationTimeUtc <= DateTime.UtcNow)
+                           {
+                               await LoginCommand.ExecuteAsync(null);
+                               return;
+                           }
+
+                           IsSynced = await _store.Sync(_authentication.CurrentToken.Token);
+                       }));
+            }
+        }
+        
         private RelayCommand _registerCommand;
 
         public RelayCommand RegisterCommand
