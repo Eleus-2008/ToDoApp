@@ -8,6 +8,9 @@ namespace ToDoApp.Model.DTO
     {
         public Guid Id { get; set; }
         public string Name { get; set; }
+        
+        public bool IsDeleted { get; set; }
+        
         public List<TaskDto> Tasks { get; set; }
     }
 }
