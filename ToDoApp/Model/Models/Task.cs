@@ -8,6 +8,9 @@ namespace ToDoApp.Model
         protected const int DefaultPriority = 5;
 
         public int Id { get; set; }
+        
+        public bool IsDeleted { get; set; }
+        public bool IsUpdated { get; set; }
 
         public string Name { get; set; } = string.Empty;
         public string Description { get; set; }
