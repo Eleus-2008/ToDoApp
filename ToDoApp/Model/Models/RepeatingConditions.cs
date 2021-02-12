@@ -8,7 +8,7 @@ namespace ToDoApp.Model
 {
     public class RepeatingConditions : IEntity
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; }
         
         public TypeOfRepeatTimeSpan Type { get; set; }
 

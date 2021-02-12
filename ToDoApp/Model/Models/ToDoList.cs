@@ -7,7 +7,7 @@ namespace ToDoApp.Model
 {
     public class ToDoList : IEntity
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; }
         public string Name { get; set; }
         public User User { get; set;  }
         

@@ -1,7 +1,9 @@
-﻿namespace ToDoApp.Model.Interfaces
+﻿using System;
+
+namespace ToDoApp.Model.Interfaces
 {
     public interface IEntity
     {
-        int Id { get; set; }
+        Guid Id { get; set; }
     }
 }
