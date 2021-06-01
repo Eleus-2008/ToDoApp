@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using ToDoApp.ViewModel;
 
 namespace ToDoApp
 {
@@ -23,6 +24,15 @@ namespace ToDoApp
         public MainWindow()
         {
             InitializeComponent();
+            Loaded += MainWindow_SyncStore;
+        }
+
+        private async void MainWindow_SyncStore(object sender, EventArgs e)
+        {
+            if (DataContext is ToDoAppViewModel context)
+            {
+                await context.SyncCommand.ExecuteAsync(null);
+            }
         }
     }
 }
