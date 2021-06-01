@@ -13,6 +13,7 @@ namespace ToDoApp.Model.Models
             set => _username = value?.ToLower();
         }
         public DateTime LastLogonTime { get; set; }
+        public DateTime LastSyncTime { get; set; }
 
         public AccessToken Token { get; set; }
     }

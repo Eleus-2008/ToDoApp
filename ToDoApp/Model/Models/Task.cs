@@ -7,8 +7,16 @@ namespace ToDoApp.Model
     {
         protected const int DefaultPriority = 5;
 
+        public Task(bool isDone, DateTime? date, int priority)
+        {
+            _isDone = isDone;
+            _date = date;
+            _priority = priority;
+        }
+
         public Guid Id { get; set; }
         
+        public bool IsAdded { get; set; }
         public bool IsDeleted { get; set; }
         public bool IsUpdated { get; set; }
 
@@ -16,6 +24,7 @@ namespace ToDoApp.Model
         public string Description { get; set; }
         
         public ToDoList ToDoList { get; set; }
+        public Guid ToDoListId { get; set; }
 
         private bool _isDone;
 

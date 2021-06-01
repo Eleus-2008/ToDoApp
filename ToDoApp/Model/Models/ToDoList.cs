@@ -10,7 +10,9 @@ namespace ToDoApp.Model
         public Guid Id { get; set; }
         public string Name { get; set; }
         public User User { get; set;  }
+        public int UserId { get; set; }
         
+        public bool IsAdded { get; set; }
         public bool IsDeleted { get; set; }
         public bool IsUpdated { get; set; }
 
