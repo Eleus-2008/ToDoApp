@@ -119,7 +119,7 @@ namespace ToDoApp.Model.Services
                 var uploadingListsDtos = _mapper.Map<IEnumerable<ToDoListDto>>(currentLists);
                 DbContext.ToDoLists.RemoveRange(currentLists);
                 uploadingLists.RemoveAll(list => list.IsDeleted);
-                var json = JsonConvert.SerializeObject(uploadingListsDtos);
+                var json = JsonConvert.SerializeObject(uploadingListsDtos.Select(list => list.Id));
                 var data = new StringContent(json, Encoding.UTF8, "application/json");
                 var uploadingResponse = await _httpClient.PostAsync("api/todolists/deletetodolists", data);
                 if (!uploadingResponse.IsSuccessStatusCode)
@@ -132,7 +132,7 @@ namespace ToDoApp.Model.Services
                 var uploadingTasksDtos = _mapper.Map<IEnumerable<ToDoListDto>>(currentTasks);
                 DbContext.Tasks.RemoveRange(currentTasks);
                 uploadingLists.ForEach(list => list.Tasks.RemoveAll(task => task.IsDeleted));
-                json = JsonConvert.SerializeObject(uploadingTasksDtos);
+                json = JsonConvert.SerializeObject(uploadingTasksDtos.Select(task => task.Id));
                 data = new StringContent(json, Encoding.UTF8, "application/json");
                 uploadingResponse = await _httpClient.PostAsync("api/tasks/deletetasks", data);
                 if (!uploadingResponse.IsSuccessStatusCode)
@@ -140,7 +140,7 @@ namespace ToDoApp.Model.Services
                     return false;
                 }
                 
-                currentLists = uploadingLists.Where(list => list.IsAdded).ToList();
+                currentLists = uploadingLists.Where(list => list.IsAdded || list.IsUpdated).ToList();
                 uploadingListsDtos = _mapper.Map<IEnumerable<ToDoListDto>>(currentLists);
                 currentLists.ForEach(list =>
                 {
@@ -154,7 +154,7 @@ namespace ToDoApp.Model.Services
                     task.IsUpdated = false;
                     DbContext.Tasks.Update(task);
                 });
-                uploadingLists.RemoveAll(list => list.IsAdded);
+                // uploadingLists.RemoveAll(list => list.IsAdded);
                 json = JsonConvert.SerializeObject(uploadingListsDtos);
                 data = new StringContent(json, Encoding.UTF8, "application/json");
                 uploadingResponse = await _httpClient.PostAsync("api/todolists/addtodolists", data);
@@ -217,7 +217,7 @@ namespace ToDoApp.Model.Services
                     return false;
                 }
 
-                user.LastSyncTime = DateTime.Now;
+                user.LastSyncTime = DateTime.UtcNow;
                 DbContext.Update(user);
                 await DbContext.SaveChangesAsync();
                 _httpClient.DefaultRequestHeaders.Authorization = null;
