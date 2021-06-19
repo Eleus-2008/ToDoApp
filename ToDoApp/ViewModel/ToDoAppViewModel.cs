@@ -21,7 +21,7 @@ namespace ToDoApp.ViewModel
 {
     public class ToDoAppViewModel : INotifyPropertyChanged
     {
-        private readonly IStore _store;
+        private readonly ISyncStore _syncStore;
         private readonly IAuthentication _authentication;
         private readonly HttpClient _httpClient;
 
@@ -284,14 +284,14 @@ namespace ToDoApp.ViewModel
         {
             _httpClient = new HttpClient
             {
-                BaseAddress = new Uri("https://localhost:5001/")
+                BaseAddress = new Uri("https://localhost:5001/api/")
             };
-            _store = new Store(_httpClient);
-            _authentication = new Authentication(_store.DbContext, _httpClient);
+            _syncStore = new SyncStore(_httpClient);
+            _authentication = new Authentication(_syncStore.DbContext, _httpClient);
 
             CurrentTask = new TaskViewModel(new Task());
 
-            foreach (var user in _store.DbContext.Users.Where(user => user.Token != null).Include(user => user.Token)
+            foreach (var user in _syncStore.DbContext.Users.Where(user => user.Token != null).Include(user => user.Token)
                 .OrderByDescending(user => user.LastLogonTime))
             {
                 Users.Add(user);
@@ -299,7 +299,7 @@ namespace ToDoApp.ViewModel
 
             if (!Users.Any())
             {
-                Users.Add(_store.DbContext.Users.FirstOrDefault(user => user.Username == "guest"));
+                Users.Add(_syncStore.DbContext.Users.FirstOrDefault(user => user.Username == "guest"));
             }
 
             SelectedUserIndex = Users.IndexOf(_authentication.CurrentUser);
@@ -307,7 +307,7 @@ namespace ToDoApp.ViewModel
 
         private async System.Threading.Tasks.Task InitializeToDoLists(User user)
         {
-            var toDoLists = _store.DbContext.ToDoLists
+            var toDoLists = _syncStore.DbContext.ToDoLists
                 .Where(list => list.User == user)
                 .Where(list => !list.IsDeleted)
                 .Include(list => list.Tasks)
@@ -326,8 +326,8 @@ namespace ToDoApp.ViewModel
                     IsAdded = true
                 };
                 _unlistedTasksList = new ToDoListViewModel(unlistedTasksList);
-                _store.DbContext.ToDoLists.Add(unlistedTasksList);
-                await _store.DbContext.SaveChangesAsync();
+                _syncStore.DbContext.ToDoLists.Add(unlistedTasksList);
+                await _syncStore.DbContext.SaveChangesAsync();
             }
             else
             {
@@ -388,7 +388,7 @@ namespace ToDoApp.ViewModel
                                return;
                            }
 
-                           IsSynced = await _store.Sync(_authentication.CurrentUser);
+                           IsSynced = await _syncStore.Sync(_authentication.CurrentUser);
                            await InitializeToDoLists(_authentication.CurrentUser);
                        }));
             }
@@ -423,14 +423,14 @@ namespace ToDoApp.ViewModel
                            var window = new LoginWindow(viewModel);
                            window.ShowDialog();
 
-                           if (_authentication.CurrentUser.Username != "guest" && _store.DbContext.ToDoLists.Any(list => list.User.Username == "guest"))
+                           if (_authentication.CurrentUser.Username != "guest" && _syncStore.DbContext.ToDoLists.Any(list => list.User.Username == "guest"))
                            {
-                               var guest = _store.DbContext.Users.FirstOrDefault(user => user.Username == "guest");
-                               foreach (var list in _store.DbContext.ToDoLists.Where(list => list.User == guest))
+                               var guest = _syncStore.DbContext.Users.FirstOrDefault(user => user.Username == "guest");
+                               foreach (var list in _syncStore.DbContext.ToDoLists.Where(list => list.User == guest))
                                {
                                    if (list.Name == "Задачи без списка")
                                    {
-                                       var todolist = _store.DbContext.ToDoLists.FirstOrDefault(l =>
+                                       var todolist = _syncStore.DbContext.ToDoLists.FirstOrDefault(l =>
                                            l.User == _authentication.CurrentUser &&
                                            l.Name == "Задачи без списка");
                                        if (todolist == null)
@@ -451,7 +451,7 @@ namespace ToDoApp.ViewModel
                                        list.User = _authentication.CurrentUser;
                                    }
 
-                                   await _store.DbContext.SaveChangesAsync();
+                                   await _syncStore.DbContext.SaveChangesAsync();
                                    
                                    Users.Remove(guest);
                                }
@@ -480,7 +480,7 @@ namespace ToDoApp.ViewModel
                            
                            if (!Users.Any())
                            {
-                               Users.Add(_store.DbContext.Users.FirstOrDefault(user => user.Username == "guest"));
+                               Users.Add(_syncStore.DbContext.Users.FirstOrDefault(user => user.Username == "guest"));
                            }
 
                            SelectedUserIndex = Users.IndexOf(_authentication.CurrentUser);
@@ -509,8 +509,8 @@ namespace ToDoApp.ViewModel
                            CurrentList = ToDoLists.Last();
                            textBox.Text = string.Empty;
 
-                           _store.DbContext.ToDoLists.Add(newList);
-                           await _store.DbContext.SaveChangesAsync();
+                           _syncStore.DbContext.ToDoLists.Add(newList);
+                           await _syncStore.DbContext.SaveChangesAsync();
                        }));
             }
         }
@@ -544,8 +544,8 @@ namespace ToDoApp.ViewModel
                            var chosenToDoList = chosenItem.Content as ToDoListViewModel;
                            chosenToDoList.ToDoList.IsUpdated = true;
 
-                           _store.DbContext.ToDoLists.Update(chosenToDoList.ToDoList);
-                           await _store.DbContext.SaveChangesAsync();
+                           _syncStore.DbContext.ToDoLists.Update(chosenToDoList.ToDoList);
+                           await _syncStore.DbContext.SaveChangesAsync();
                        }));
             }
         }
@@ -570,12 +570,12 @@ namespace ToDoApp.ViewModel
                            foreach (var taskViewModel in chosenToDoList.Tasks)
                            {
                                taskViewModel.Task.IsDeleted = true;
-                               _store.DbContext.Tasks.Update(taskViewModel.Task);
+                               _syncStore.DbContext.Tasks.Update(taskViewModel.Task);
                            }
 
                            chosenToDoList.ToDoList.IsDeleted = true;
-                           _store.DbContext.ToDoLists.Update(chosenToDoList.ToDoList);
-                           await _store.DbContext.SaveChangesAsync();
+                           _syncStore.DbContext.ToDoLists.Update(chosenToDoList.ToDoList);
+                           await _syncStore.DbContext.SaveChangesAsync();
                        }));
             }
         }
@@ -604,9 +604,9 @@ namespace ToDoApp.ViewModel
 
                                Application.Current.Dispatcher.Invoke(() => CurrentTasksList.Add(CurrentTask));
 
-                               _store.DbContext.ToDoLists.Update(CurrentTask.Task.ToDoList);
-                               _store.DbContext.Tasks.Add(CurrentTask.Task);
-                               await _store.DbContext.SaveChangesAsync();
+                               _syncStore.DbContext.ToDoLists.Update(CurrentTask.Task.ToDoList);
+                               _syncStore.DbContext.Tasks.Add(CurrentTask.Task);
+                               await _syncStore.DbContext.SaveChangesAsync();
 
                                CurrentTask = new TaskViewModel(new Task());
 
@@ -647,9 +647,9 @@ namespace ToDoApp.ViewModel
                            chosenTask.Task.IsUpdated = true;
                            chosenTask.Task.ToDoList.IsUpdated = true;
                            
-                           _store.DbContext.ToDoLists.Update(chosenTask.Task.ToDoList);
-                           _store.DbContext.Tasks.Update(chosenTask.Task);
-                           await _store.DbContext.SaveChangesAsync();
+                           _syncStore.DbContext.ToDoLists.Update(chosenTask.Task.ToDoList);
+                           _syncStore.DbContext.Tasks.Update(chosenTask.Task);
+                           await _syncStore.DbContext.SaveChangesAsync();
 
                            TasksView.Refresh();
                        }));
@@ -668,9 +668,9 @@ namespace ToDoApp.ViewModel
                            CurrentTask.Task.IsUpdated = true;
                            CurrentTask.Task.ToDoList.IsUpdated = true;
 
-                           _store.DbContext.ToDoLists.Update(CurrentTask.Task.ToDoList);
-                           _store.DbContext.Tasks.Update(CurrentTask.Task);
-                           await _store.DbContext.SaveChangesAsync();
+                           _syncStore.DbContext.ToDoLists.Update(CurrentTask.Task.ToDoList);
+                           _syncStore.DbContext.Tasks.Update(CurrentTask.Task);
+                           await _syncStore.DbContext.SaveChangesAsync();
                            IsTaskEditing = false;
                            CurrentTask = new TaskViewModel(new Task());
 
@@ -693,9 +693,9 @@ namespace ToDoApp.ViewModel
                            chosenTask.Task.IsDeleted = true;
                            chosenTask.Task.ToDoList.IsUpdated = true;
                            
-                           _store.DbContext.ToDoLists.Update(chosenTask.Task.ToDoList);
-                           _store.DbContext.Tasks.Update(chosenTask.Task);
-                           await _store.DbContext.SaveChangesAsync();
+                           _syncStore.DbContext.ToDoLists.Update(chosenTask.Task.ToDoList);
+                           _syncStore.DbContext.Tasks.Update(chosenTask.Task);
+                           await _syncStore.DbContext.SaveChangesAsync();
                            CurrentTasksList.Remove(chosenTask);
                        }));
             }

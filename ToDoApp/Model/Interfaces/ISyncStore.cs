@@ -4,7 +4,7 @@ using ToDoApp.Model.Models;
 
 namespace ToDoApp.Model.Interfaces
 {
-    public interface IStore
+    public interface ISyncStore
     {
         ApplicationContext DbContext { get; }
         Task<bool> Sync(User user);

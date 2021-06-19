@@ -17,6 +17,7 @@
     <Deterministic>true</Deterministic>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
+    <LangVersion>7.3</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -188,11 +189,12 @@
     <Compile Include="Model\Mapper\MappingProfile.cs" />
     <Compile Include="Model\Models\AccessToken.cs" />
     <Compile Include="Model\Models\User.cs" />
+    <Compile Include="Model\Services\ApiConnector.cs" />
     <Compile Include="Model\Services\ApplicationContext.cs" />
     <Compile Include="Model\Services\Authentication.cs" />
-    <Compile Include="Model\Services\Store.cs" />
+    <Compile Include="Model\Services\SyncStore.cs" />
     <Compile Include="Model\Interfaces\IAsyncCommand.cs" />
-    <Compile Include="Model\Interfaces\IStore.cs" />
+    <Compile Include="Model\Interfaces\ISyncStore.cs" />
     <Compile Include="Model\Interfaces\IErrorHandler.cs" />
     <Compile Include="Model\Models\RepeatingConditions.cs" />
     <Compile Include="Model\Models\Task.cs" />
