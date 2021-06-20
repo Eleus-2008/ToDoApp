@@ -31,37 +31,37 @@ namespace ToDoApp.Model.Services
                     await FinishFailedSync();
                     return false;
                 }
+
                 UpdateLocalStorage(updatedLists, user);
 
                 ok = await UploadLocalUpdates(user);
                 if (!ok)
                 {
-                    await FinishFailedSync();
-                    return false;
+                    return await FinishFailedSync();
                 }
 
-                await FinishSuccessSync();
-                return true;
+                return await FinishSuccessSync();
             }
             catch
             {
-                await FinishFailedSync();
-                return false;
+                return await FinishFailedSync();
             }
 
-            async System.Threading.Tasks.Task FinishSuccessSync()
+            async Task<bool> FinishSuccessSync()
             {
                 user.LastSyncTime = DateTime.UtcNow;
                 DbContext.Update(user);
                 await DbContext.SaveChangesAsync();
                 _api.RemoveCurrentToken();
+                return true;
             }
-            
-            async System.Threading.Tasks.Task FinishFailedSync()
+
+            async Task<bool> FinishFailedSync()
             {
                 _api.RemoveCurrentToken();
                 await DbContext.DisposeAsync();
                 DbContext = new ApplicationContext();
+                return false;
             }
         }
 
@@ -124,98 +124,134 @@ namespace ToDoApp.Model.Services
 
         private async Task<bool> UploadLocalUpdates(User user)
         {
-            var uploadingLists = DbContext.ToDoLists
-                    .Where(list => list.User == user && (list.IsUpdated || list.IsDeleted || list.IsAdded))
-                    .Include(list => list.Tasks).ToList();
-                foreach (var list in uploadingLists)
-                {
-                    list.Tasks.RemoveAll(task => !(task.IsUpdated || task.IsDeleted || task.IsAdded));
-                }
+            var uploadingLists = GetUploadingLists(user);
 
-                var deletingLists = uploadingLists.Where(list => list.IsDeleted).ToList();
-                var ok = await _api.DeleteToDoListsAsync(deletingLists.Select(list => list.Id));
-                if (!ok)
-                {
-                    return false;
-                }
-                DbContext.ToDoLists.RemoveRange(deletingLists);
-                uploadingLists.RemoveAll(list => list.IsDeleted);
+            var deletingLists = TakeDeletingLists(uploadingLists);
+            var ok = await _api.DeleteToDoListsAsync(deletingLists.Select(list => list.Id));
+            if (!ok)
+            {
+                return false;
+            }
 
-                var deletingTasks = uploadingLists.SelectMany(list =>
-                    list.Tasks.Where(task => task.IsDeleted)).ToList();
-                ok = await _api.DeleteTasksAsync(deletingTasks.Select(task => task.Id));
-                if (!ok)
-                {
-                    return false;
-                }
-                DbContext.Tasks.RemoveRange(deletingTasks);
-                uploadingLists.ForEach(list => list.Tasks.RemoveAll(task => task.IsDeleted));
+            var deletingTasks = TakeDeletingTasks(uploadingLists);
+            ok = await _api.DeleteTasksAsync(deletingTasks.Select(task => task.Id));
+            if (!ok)
+            {
+                return false;
+            }
 
-                var addingLists = uploadingLists.Where(list => list.IsAdded || list.IsUpdated).ToList();
-                ok = await _api.AddToDoListsAsync(addingLists);
-                if (!ok)
-                {
-                    return false;
-                }
-                addingLists.ForEach(list =>
-                {
-                    list.IsAdded = false;
-                    list.IsUpdated = false;
-                    DbContext.ToDoLists.Update(list);
-                });
-                addingLists.SelectMany(list => list.Tasks).ToList().ForEach(task =>
-                {
-                    task.IsAdded = false;
-                    task.IsUpdated = false;
-                    DbContext.Tasks.Update(task);
-                });
+            var addingLists = TakeAddingLists(uploadingLists);
+            ok = await _api.AddToDoListsAsync(addingLists);
+            if (!ok)
+            {
+                return false;
+            }
 
-                var addingTasks = uploadingLists.SelectMany(list =>
-                    list.Tasks.Where(task => task.IsAdded)).ToList();
-                ok = await _api.AddTasksAsync(addingTasks);
-                if (!ok)
-                {
-                    return false;
-                }
-                addingTasks.ForEach(task =>
-                {
-                    task.IsAdded = false;
-                    task.IsUpdated = false;
-                    DbContext.Tasks.Update(task);
-                });
+            var addingTasks = TakeAddingTasks(uploadingLists);
+            ok = await _api.AddTasksAsync(addingTasks);
+            if (!ok)
+            {
+                return false;
+            }
 
-                var updatingLists = uploadingLists.Where(list => list.IsUpdated).ToList();
-                ok = await _api.UpdateToDoListsAsync(updatingLists);
-                if (!ok)
-                {
-                    return false;
-                }
-                updatingLists.ForEach(list =>
-                {
-                    list.IsUpdated = false;
-                    DbContext.ToDoLists.Update(list);
-                });
-                updatingLists.SelectMany(list => list.Tasks).ToList().ForEach(task =>
-                {
-                    task.IsUpdated = false;
-                    DbContext.Tasks.Update(task);
-                });
-                uploadingLists.RemoveAll(list => list.IsUpdated);
+            var updatingLists = TakeUpdatingLists(uploadingLists);
+            ok = await _api.UpdateToDoListsAsync(updatingLists);
+            if (!ok)
+            {
+                return false;
+            }
 
-                var updatingTasks = uploadingLists.SelectMany(list =>
-                    list.Tasks.Where(task => task.IsUpdated)).ToList();
-                ok = await _api.UpdateTasksAsync(updatingTasks);
-                if (!ok)
-                {
-                    return false;
-                }
-                updatingTasks.ForEach(task =>
-                {
-                    task.IsUpdated = false;
-                    DbContext.Tasks.Update(task);
-                });
+            var updatingTasks = TakeUpdatingTasks(uploadingLists);
+            ok = await _api.UpdateTasksAsync(updatingTasks);
+            if (!ok)
+            {
+                return false;
+            }
 
-                return true;
+            return true;
+        }
+
+        private List<ToDoList> GetUploadingLists(User user)
+        {
+            var lists = DbContext.ToDoLists
+                .Where(list => list.User == user && (list.IsUpdated || list.IsDeleted || list.IsAdded))
+                .Include(list => list.Tasks).ToList();
+            lists.ForEach(list => list.Tasks.RemoveAll(task => !(task.IsUpdated || task.IsDeleted || task.IsAdded)));
+            return lists;
+        }
+
+        private List<ToDoList> TakeDeletingLists(List<ToDoList> lists)
+        {
+            var deletingLists = lists.Where(list => list.IsDeleted).ToList();
+            DbContext.ToDoLists.RemoveRange(deletingLists);
+            lists.RemoveAll(list => list.IsDeleted);
+            return deletingLists;
+        }
+
+        private List<Task> TakeDeletingTasks(List<ToDoList> lists)
+        {
+            var deletingTasks = lists.SelectMany(list => list.Tasks.Where(task => task.IsDeleted)).ToList();
+            DbContext.Tasks.RemoveRange(deletingTasks);
+            lists.ForEach(list => list.Tasks.RemoveAll(task => task.IsDeleted));
+            return deletingTasks;
+        }
+
+        private List<ToDoList> TakeUpdatingLists(List<ToDoList> lists)
+        {
+            var updatingLists = lists.Where(list => list.IsUpdated).ToList();
+            updatingLists.ForEach(list =>
+            {
+                list.IsUpdated = false;
+                DbContext.ToDoLists.Update(list);
+            });
+            updatingLists.SelectMany(list => list.Tasks).ToList().ForEach(task =>
+            {
+                task.IsUpdated = false;
+                DbContext.Tasks.Update(task);
+            });
+            lists.RemoveAll(list => list.IsUpdated);
+            return updatingLists;
+        }
+
+        private List<Task> TakeUpdatingTasks(List<ToDoList> lists)
+        {
+            var updatingTasks = lists.SelectMany(list => list.Tasks.Where(task => task.IsUpdated)).ToList();
+            updatingTasks.ForEach(task =>
+            {
+                task.IsUpdated = false;
+                DbContext.Tasks.Update(task);
+            });
+            return updatingTasks;
+        }
+
+        private List<ToDoList> TakeAddingLists(List<ToDoList> lists)
+        {
+            var addingLists = lists.Where(list => list.IsAdded || list.IsUpdated).ToList();
+            addingLists.ForEach(list =>
+            {
+                list.IsAdded = false;
+                list.IsUpdated = false;
+                DbContext.ToDoLists.Update(list);
+            });
+            addingLists.SelectMany(list => list.Tasks).ToList().ForEach(task =>
+            {
+                task.IsAdded = false;
+                task.IsUpdated = false;
+                DbContext.Tasks.Update(task);
+            });
+            return addingLists;
+        }
+
+        private List<Task> TakeAddingTasks(List<ToDoList> lists)
+        {
+            var addingTasks = lists.SelectMany(list => list.Tasks.Where(task => task.IsAdded)).ToList();
+            addingTasks.ForEach(task =>
+            {
+                task.IsAdded = false;
+                task.IsUpdated = false;
+                DbContext.Tasks.Update(task);
+            });
+            return addingTasks;
         }
     }
 }
