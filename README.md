@@ -1,4 +1,6 @@
-# ToDoApp - WPF MVVM
+# ToDoApp - task manager
+## Used technologies
+WPF (MVVM), EF Core, SQLite, AutoMapper
 ## Description:
 Classic task manager with authentification and synchronization capabilities
 ## Functionality:
@@ -11,3 +13,5 @@ Classic task manager with authentification and synchronization capabilities
 ## To do
 - Test sync functionality
 - Refactor some classes
+- Add sync button
+- Fix design problems
