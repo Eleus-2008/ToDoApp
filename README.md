@@ -1,6 +1,6 @@
 # ToDoApp - task manager
 ## Used technologies
-WPF (MVVM), EF Core, SQLite, AutoMapper
+WPF (MVVM), EF Core, SQLite, AutoMapper, Json.NET
 ## Description:
 Classic task manager with authentification and synchronization capabilities
 ## Functionality:
